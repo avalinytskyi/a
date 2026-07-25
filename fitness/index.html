@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Прогресс — фитнес-дашборд</title>
+<link rel="icon" href="data:,">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: #0A0B12; }
+  #root { min-height: 100vh; }
+
+  .dash-root {
+    --bg: #0A0B12; --surface: rgba(255,255,255,0.045); --surface-solid: #14151F;
+    --border: rgba(255,255,255,0.09); --text: #F4F5FA; --muted: #888EA3;
+    --violet: #8B5CF6; --cyan: #22D3EE; --mint: #34D399; --coral: #FB7185;
+    --grad: linear-gradient(135deg, var(--violet), var(--cyan));
+    background:
+      radial-gradient(circle at 15% 0%, rgba(139,92,246,0.16), transparent 45%),
+      radial-gradient(circle at 85% 15%, rgba(34,211,238,0.12), transparent 40%),
+      var(--bg);
+    color: var(--text); font-family: 'Inter', sans-serif;
+    min-height: 100vh; padding: 18px 14px 48px; box-sizing: border-box; font-size: 15px;
+  }
+  .dash-root * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  .dash-inner { max-width: 520px; margin: 0 auto; }
+
+  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 10px; }
+  .header h1 {
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.01em; font-size: 25px; margin: 0; line-height: 1;
+    background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .header .sub { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .header .date-pill {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border); padding: 6px 11px; border-radius: 20px;
+    font-weight: 500; white-space: nowrap; backdrop-filter: blur(8px);
+  }
+
+  .tabs { display: flex; gap: 3px; margin-bottom: 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.01em; font-size: 12.5px; font-weight: 600;
+    color: var(--muted); background: none; border: none; padding: 9px 13px; cursor: pointer;
+    white-space: nowrap; flex-shrink: 0; border-radius: 10px; transition: color .15s;
+  }
+  .tab-btn.active { color: #0A0B12; background: var(--grad); }
+
+  .stats-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 15px;
+    display: flex; gap: 13px; align-items: center; backdrop-filter: blur(10px);
+  }
+  .stat-icon { background: rgba(255,255,255,0.06); border-radius: 12px; padding: 9px; display: flex; color: var(--cyan); flex-shrink: 0; }
+  .stat-ring-wrap { position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .stat-ring-num { position: absolute; font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; }
+  .stat-body { min-width: 0; }
+  .stat-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 3px; }
+  .stat-value { font-family: 'Space Grotesk', sans-serif; font-size: 21px; font-weight: 700; letter-spacing: -0.01em; }
+  .stat-sub { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 3px; margin-top: 3px; flex-wrap: wrap; }
+  .stat-sub.up { color: var(--coral); }
+  .stat-sub.down { color: var(--mint); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 18px; margin-bottom: 14px; backdrop-filter: blur(10px); }
+  .card h2 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.01em; font-size: 15px; margin: 0 0 13px; display: flex; align-items: center; gap: 7px; font-weight: 600; }
+
+  .section-accent { display: flex; align-items: center; gap: 7px; font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 14px; }
+  .accent-bar { width: 3px; height: 16px; border-radius: 2px; background: var(--grad); }
+  .accent-unit { color: var(--muted); font-size: 11px; margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-weight: 400; }
+
+  .form-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 90px; min-width: 82px; }
+  .field label { font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .field input, .field select {
+    background: var(--surface-solid); border: 1px solid var(--border); color: var(--text);
+    border-radius: 12px; padding: 10px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 16px;
+    width: 100%; min-height: 42px;
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,0.15); }
+
+  .btn {
+    font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.01em; font-weight: 600;
+    font-size: 13.5px; background: var(--grad); color: #0A0B12; border: none; border-radius: 13px;
+    padding: 12px 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    width: 100%; min-height: 46px; box-shadow: 0 4px 18px rgba(139,92,246,0.28);
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn:active { transform: scale(0.98); box-shadow: 0 2px 10px rgba(139,92,246,0.22); }
+  .icon-btn { background: none; border: none; color: var(--muted); cursor: pointer; padding: 8px; display: flex; min-width: 36px; min-height: 36px; align-items: center; justify-content: center; border-radius: 8px; }
+  .icon-btn:active { color: var(--coral); background: rgba(251,113,133,0.1); }
+
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; }
+  table { width: 100%; border-collapse: collapse; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; }
+  th { text-align: left; color: var(--muted); font-weight: 500; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; padding: 0 8px 8px 4px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 9px 8px 9px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); white-space: nowrap; }
+  tr:last-child td { border-bottom: none; }
+
+  .segmented { display: flex; gap: 5px; margin-bottom: 12px; flex-wrap: wrap; }
+  .segmented button { background: var(--surface-solid); border: 1px solid var(--border); color: var(--muted); font-size: 11.5px; padding: 7px 12px; border-radius: 20px; cursor: pointer; font-family: 'Inter', sans-serif; min-height: 34px; }
+  .segmented button.active { background: var(--grad); color: #0A0B12; border-color: transparent; font-weight: 600; }
+
+  .day-picker { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .day-picker button { flex: 1 1 auto; font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.01em; font-size: 12.5px; font-weight: 600; background: var(--surface-solid); border: 1px solid var(--border); color: var(--muted); padding: 9px 10px; border-radius: 12px; cursor: pointer; min-height: 42px; }
+  .day-picker button.active { background: var(--grad); color: #0A0B12; border-color: transparent; }
+
+  .ex-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 11px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .ex-row:last-child { border-bottom: none; }
+  .ex-row .ex-name { flex: 1 1 100%; font-size: 13px; line-height: 1.3; }
+  .ex-row .set-badge { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--muted); background: var(--surface-solid); border: 1px solid var(--border); border-radius: 20px; padding: 4px 9px; white-space: nowrap; }
+  .ex-row input { flex: 1 1 auto; max-width: 110px; margin-left: auto; background: var(--surface-solid); border: 1px solid var(--border); color: var(--text); border-radius: 10px; padding: 9px 10px; font-family: 'IBM Plex Mono', monospace; font-size: 16px; min-height: 40px; }
+  .ex-row input:focus { outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(34,211,238,0.15); }
+
+  .session-entry { border: 1px solid var(--border); border-radius: 16px; padding: 13px; margin-bottom: 10px; background: var(--surface-solid); }
+  .session-entry-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 9px; gap: 8px; }
+  .session-entry-head .day-tag {
+    font-family: 'Space Grotesk', sans-serif; font-size: 12px; letter-spacing: -0.01em; font-weight: 700;
+    background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .session-entry-head .ex-date { color: var(--muted); font-size: 11.5px; font-family: 'IBM Plex Mono', monospace; }
+  .set-chip { display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 20px; padding: 4px 9px; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; margin: 2px 4px 0 0; }
+  .pr-badge {
+    display: inline-flex; align-items: center; gap: 2px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 9px;
+    background: var(--grad); color: #0A0B12; border-radius: 20px; padding: 2px 6px; letter-spacing: .02em; margin-left: 4px;
+  }
+
+  .empty-state { color: var(--muted); font-size: 12.5px; text-align: center; padding: 22px 8px; }
+  .del-cell { text-align: right; width: 30px; }
+  .error-banner { background: rgba(251,113,133,0.15); border: 1px solid var(--coral); color: var(--coral); padding: 10px 14px; border-radius: 12px; margin-bottom: 14px; font-size: 12.5px; }
+  .loading-state { color: var(--muted); text-align: center; padding: 50px 0; font-family: 'IBM Plex Mono', monospace; font-size: 13px; }
+  .chart-wrap { width: 100%; height: 180px; margin-left: -10px; }
+
+  .insight-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12.5px; }
+  .insight-row:last-child { border-bottom: none; }
+  .insight-row .delta { font-family: 'IBM Plex Mono', monospace; font-weight: 600; display: flex; align-items: center; gap: 4px; font-size: 12px; }
+  .insight-row .delta.up { color: var(--coral); }
+  .insight-row .delta.down { color: var(--mint); }
+  .insight-row .delta.flat { color: var(--muted); }
+  .insight-note { font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+  @media (min-width: 640px) {
+    .dash-root { padding: 30px 20px 60px; font-size: 16px; }
+    .dash-inner { max-width: 880px; }
+    .header h1 { font-size: 32px; }
+    .header .sub { font-size: 13px; }
+    .stats-row { flex-direction: row; }
+    .stat-card { flex: 1; }
+    .btn { width: auto; }
+    .field { flex: 0 0 auto; min-width: 110px; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/prop-types@15/prop-types.js"></script>
+<script src="https://unpkg.com/recharts@2/umd/Recharts.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo } = React;
+const { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } = Recharts;
+
+const COLORS = {
+  violet: "#8B5CF6", cyan: "#22D3EE", mint: "#34D399", coral: "#FB7185",
+  muted: "#888EA3", border: "rgba(255,255,255,0.09)",
+};
+
+const MEASURE_FIELDS = [
+  { key: "waist", label: "Талия" },
+  { key: "chest", label: "Грудь" },
+  { key: "hips", label: "Таз" },
+  { key: "biceps", label: "Бицепс" },
+  { key: "thigh", label: "Бедро" },
+];
+
+const PROGRAM = {
+  1: { title: "День 1", exercises: [
+    { name: "Жим штанги на наклонной скамье", sets: 4 },
+    { name: "Подтягивания в гравитроне обратным хватом", sets: 3 },
+    { name: "Сведение рук в кроссовере", sets: 4 },
+    { name: "Тяга Т-грифа", sets: 3 },
+    { name: "Сгибания ног в тренажере", sets: 4 },
+    { name: "Пресс — подъём ног в висе", sets: 4 },
+  ]},
+  2: { title: "День 2", exercises: [
+    { name: "Разведение гантелей", sets: 4 },
+    { name: "Тяга с верхнего блока сидя на скамье", sets: 3 },
+    { name: "Пуловер на спину", sets: 3 },
+    { name: "Махи гантелями вперёд", sets: 4 },
+    { name: "Разгибания с гантелями на трицепс с упором на скамью", sets: 4 },
+    { name: "Обратная бабочка", sets: 4 },
+  ]},
+  3: { title: "День 3", exercises: [
+    { name: "Жим штанги лёжа", sets: 4 },
+    { name: "Рычажная тяга", sets: 3 },
+    { name: "Экстензия", sets: 3 },
+    { name: "Разгибания ног сидя", sets: 4 },
+    { name: "Бабочка", sets: 4 },
+    { name: "Французский жим", sets: 4 },
+    { name: "Подъём гантелей на бицепс", sets: 4 },
+  ]},
+  4: { title: "День 4", exercises: [
+    { name: "Тяга штанги в наклоне прямым хватом", sets: 3 },
+    { name: "Гакк-приседания", sets: 4 },
+    { name: "Тяга горизонтального блока одной рукой", sets: 3 },
+    { name: "Подъёмы рук через стороны лёжа на наклонной скамье (плечи)", sets: 4 },
+    { name: "Молоты", sets: 4 },
+    { name: "Жим гантели на трицепс", sets: 4 },
+  ]},
+};
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+function todayStr() { return new Date().toISOString().slice(0, 10); }
+function fmtDate(d) {
+  const dt = new Date(d + "T00:00:00");
+  return dt.toLocaleDateString("ru-RU", { day: "2-digit", month: "short" });
+}
+function daysBetween(a, b) {
+  return Math.round((new Date(b + "T00:00:00") - new Date(a + "T00:00:00")) / 86400000);
+}
+function initWeights(day) {
+  const w = {};
+  PROGRAM[day].exercises.forEach((ex) => { w[ex.name] = ""; });
+  return w;
+}
+function emptyMeasureForm() {
+  const f = { date: todayStr() };
+  MEASURE_FIELDS.forEach(({ key }) => { f[key] = ""; });
+  return f;
+}
+
+// --- Minimal inline icon set (no external icon dependency) ---
+function Icon({ children, size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {children}
+    </svg>
+  );
+}
+const IconPlus = (p) => <Icon {...p}><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></Icon>;
+const IconTrash = (p) => <Icon {...p}><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" /><path d="M10 11v6" /><path d="M14 11v6" /></Icon>;
+const IconDumbbell = (p) => <Icon {...p}><path d="M6.5 6.5l11 11" /><path d="M21 21l-1.5-1.5" /><path d="M3 3l1.5 1.5" /><path d="M18 3l3 3" /><path d="M3 18l3 3" /><path d="M15 3l6 6" /><path d="M3 15l6 6" /></Icon>;
+const IconRuler = (p) => <Icon {...p}><rect x="3" y="7" width="18" height="10" rx="1.5" /><path d="M7 7v3" /><path d="M11 7v3" /><path d="M15 7v3" /><path d="M19 7v3" /></Icon>;
+const IconScale = (p) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 12l3-2" /><path d="M9 6l1 2" /></Icon>;
+const IconTrendUp = (p) => <Icon {...p}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></Icon>;
+const IconTrendDown = (p) => <Icon {...p}><polyline points="23 18 13.5 8.5 8.5 13.5 1 6" /><polyline points="17 18 23 18 23 12" /></Icon>;
+const IconMinus = (p) => <Icon {...p}><line x1="5" y1="12" x2="19" y2="12" /></Icon>;
+const IconBarChart = (p) => <Icon {...p}><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></Icon>;
+const IconZap = (p) => <Icon {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></Icon>;
+
+function SectionAccent({ label, unit }) {
+  return (
+    <div className="section-accent">
+      <span className="accent-bar" />
+      <IconRuler size={14} />
+      <span>{label}</span>
+      {unit && <span className="accent-unit">{unit}</span>}
+    </div>
+  );
+}
+function PrBadge() {
+  return <span className="pr-badge"><IconZap size={9} />PR</span>;
+}
+function ProgressRing({ value, max, size = 46 }) {
+  const stroke = 5;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
+  const pct = max ? Math.min(1, value / max) : 0;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
+      <defs>
+        <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor={COLORS.violet} />
+          <stop offset="100%" stopColor={COLORS.cyan} />
+        </linearGradient>
+      </defs>
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+      <circle
+        cx={size / 2} cy={size / 2} r={r} fill="none" stroke="url(#ringGrad)" strokeWidth={stroke}
+        strokeDasharray={c} strokeDashoffset={c * (1 - pct)} strokeLinecap="round"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </svg>
+  );
+}
+function StatCard({ ring, icon, label, value, sub, trend }) {
+  return (
+    <div className="stat-card">
+      {ring ? (
+        <div className="stat-ring-wrap">
+          <ProgressRing value={ring.value} max={ring.max} />
+          <span className="stat-ring-num">{ring.value}</span>
+        </div>
+      ) : (
+        <div className="stat-icon">{icon}</div>
+      )}
+      <div className="stat-body">
+        <div className="stat-label">{label}</div>
+        <div className="stat-value">{value}</div>
+        {sub && (
+          <div className={`stat-sub ${trend === "up" ? "up" : trend === "down" ? "down" : ""}`}>
+            {trend === "up" && <IconTrendUp size={12} />}
+            {trend === "down" && <IconTrendDown size={12} />}
+            {trend === "flat" && <IconMinus size={12} />}
+            {sub}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+function EmptyState({ text }) { return <div className="empty-state">{text}</div>; }
+
+function GradientArea({ data, dataKey, gradId, color, unit }) {
+  return (
+    <div className="chart-wrap">
+      <ResponsiveContainer>
+        <AreaChart data={data} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
+          <defs>
+            <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={color} stopOpacity={0} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
+          <XAxis dataKey="date" stroke={COLORS.muted} fontSize={10} tickLine={false} axisLine={false} />
+          <YAxis stroke={COLORS.muted} fontSize={10} width={30} tickLine={false} axisLine={false} domain={["dataMin - 1", "dataMax + 1"]} />
+          <Tooltip
+            contentStyle={{ background: "#1A1B26", border: `1px solid ${COLORS.border}`, borderRadius: 10, fontSize: 12 }}
+            labelStyle={{ color: COLORS.muted }}
+            formatter={(v) => [`${v} ${unit || ""}`, ""]}
+          />
+          <Area type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2.5} fill={`url(#${gradId})`} dot={{ r: 3, fill: color, strokeWidth: 0 }} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function FitnessDashboard() {
+  const [tab, setTab] = useState("overview");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const [weightLog, setWeightLog] = useState([]);
+  const [measurementsLog, setMeasurementsLog] = useState([]);
+  const [sessionsLog, setSessionsLog] = useState([]);
+
+  const [weightForm, setWeightForm] = useState({ date: todayStr(), weight: "" });
+  const [measureForm, setMeasureForm] = useState(emptyMeasureForm());
+  const [selectedMeasureField, setSelectedMeasureField] = useState("waist");
+  const [selectedExercise, setSelectedExercise] = useState(null);
+
+  const [logDay, setLogDay] = useState(1);
+  const [logDate, setLogDate] = useState(todayStr());
+  const [logWeights, setLogWeights] = useState(initWeights(1));
+
+  useEffect(() => {
+    try {
+      const w = localStorage.getItem("weight-log");
+      const m = localStorage.getItem("measurements-log");
+      const s = localStorage.getItem("sessions-log");
+      if (w) setWeightLog(JSON.parse(w));
+      if (m) setMeasurementsLog(JSON.parse(m));
+      if (s) setSessionsLog(JSON.parse(s));
+    } catch (e) {
+      setError("Не удалось загрузить сохранённые данные.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  function persist(key, value, setter) {
+    setter(value);
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (e) {
+      setError("Не удалось сохранить изменения (возможно, приватный режим браузера).");
+    }
+  }
+
+  const sortedWeight = useMemo(() => [...weightLog].sort((a, b) => a.date.localeCompare(b.date)), [weightLog]);
+  const sortedMeasurements = useMemo(() => [...measurementsLog].sort((a, b) => a.date.localeCompare(b.date)), [measurementsLog]);
+  const sortedSessions = useMemo(() => [...sessionsLog].sort((a, b) => b.date.localeCompare(a.date)), [sessionsLog]);
+  const sortedSessionsAsc = useMemo(() => [...sessionsLog].sort((a, b) => a.date.localeCompare(b.date)), [sessionsLog]);
+
+  const allExerciseNames = useMemo(() => {
+    const set = new Set();
+    Object.values(PROGRAM).forEach((d) => d.exercises.forEach((ex) => set.add(ex.name)));
+    return Array.from(set);
+  }, []);
+
+  const exerciseHistory = useMemo(() => {
+    const map = {};
+    sortedSessionsAsc.forEach((s) => {
+      Object.entries(s.weights).forEach(([name, w]) => {
+        if (w === "" || w == null) return;
+        if (!map[name]) map[name] = [];
+        map[name].push({ date: s.date, weight: Number(w) });
+      });
+    });
+    return map;
+  }, [sortedSessionsAsc]);
+
+  const bestByExercise = useMemo(() => {
+    const map = {};
+    Object.entries(exerciseHistory).forEach(([name, arr]) => {
+      map[name] = Math.max(...arr.map((e) => e.weight), 0);
+    });
+    return map;
+  }, [exerciseHistory]);
+
+  useEffect(() => {
+    if (!selectedExercise && allExerciseNames.length) setSelectedExercise(allExerciseNames[0]);
+  }, [allExerciseNames, selectedExercise]);
+
+  function addWeight() {
+    if (!weightForm.weight) return;
+    const entry = { id: uid(), date: weightForm.date, weight: Number(weightForm.weight) };
+    persist("weight-log", [...weightLog, entry], setWeightLog);
+    setWeightForm({ date: todayStr(), weight: "" });
+  }
+  function addMeasurement() {
+    const values = {};
+    MEASURE_FIELDS.forEach(({ key }) => { if (measureForm[key] !== "") values[key] = Number(measureForm[key]); });
+    if (Object.keys(values).length === 0) return;
+    const entry = { id: uid(), date: measureForm.date, values };
+    persist("measurements-log", [...measurementsLog, entry], setMeasurementsLog);
+    setMeasureForm(emptyMeasureForm());
+  }
+  function saveSession() {
+    const filled = Object.fromEntries(Object.entries(logWeights).filter(([, v]) => v !== ""));
+    if (Object.keys(filled).length === 0) return;
+    const entry = { id: uid(), date: logDate, day: logDay, weights: filled };
+    persist("sessions-log", [...sessionsLog, entry], setSessionsLog);
+    setLogWeights(initWeights(logDay));
+  }
+  function deleteEntry(kind, id) {
+    if (kind === "weight") persist("weight-log", weightLog.filter((e) => e.id !== id), setWeightLog);
+    else if (kind === "measurement") persist("measurements-log", measurementsLog.filter((e) => e.id !== id), setMeasurementsLog);
+    else if (kind === "session") persist("sessions-log", sessionsLog.filter((e) => e.id !== id), setSessionsLog);
+  }
+  function switchLogDay(day) {
+    setLogDay(day);
+    setLogWeights(initWeights(day));
+  }
+
+  const latestWeight = sortedWeight[sortedWeight.length - 1];
+  const prevWeight = sortedWeight[sortedWeight.length - 2];
+  const weightDelta = latestWeight && prevWeight ? +(latestWeight.weight - prevWeight.weight).toFixed(1) : null;
+
+  const latestMeasurement = sortedMeasurements[sortedMeasurements.length - 1];
+  const prevMeasurement = sortedMeasurements[sortedMeasurements.length - 2];
+  const waistDelta = latestMeasurement?.values?.waist != null && prevMeasurement?.values?.waist != null
+    ? +(latestMeasurement.values.waist - prevMeasurement.values.waist).toFixed(1) : null;
+
+  const sessionsThisWeek = useMemo(() => {
+    const weekAgo = new Date(Date.now() - 7 * 86400000);
+    return sessionsLog.filter((s) => new Date(s.date + "T00:00:00") >= weekAgo).length;
+  }, [sessionsLog]);
+
+  const measureChartData = useMemo(() => sortedMeasurements
+    .filter((m) => m.values[selectedMeasureField] != null)
+    .map((m) => ({ date: fmtDate(m.date), value: m.values[selectedMeasureField] })), [sortedMeasurements, selectedMeasureField]);
+
+  const exerciseChartData = useMemo(() => {
+    if (!selectedExercise || !exerciseHistory[selectedExercise]) return [];
+    return exerciseHistory[selectedExercise].map((e) => ({ date: fmtDate(e.date), weight: e.weight }));
+  }, [exerciseHistory, selectedExercise]);
+
+  const weightChartData = sortedWeight.map((w) => ({ date: fmtDate(w.date), weight: w.weight }));
+
+  const totalSpanDays = sortedWeight.length || sortedSessions.length || sortedMeasurements.length
+    ? Math.max(
+        sortedWeight.length ? daysBetween(sortedWeight[0].date, todayStr()) : 0,
+        sortedSessionsAsc.length ? daysBetween(sortedSessionsAsc[0].date, todayStr()) : 0,
+        sortedMeasurements.length ? daysBetween(sortedMeasurements[0].date, todayStr()) : 0,
+      )
+    : 0;
+  const totalWeeksTracked = Math.max(1, Math.round(totalSpanDays / 7)) || 1;
+  const avgSessionsPerWeek = sessionsLog.length ? +(sessionsLog.length / totalWeeksTracked).toFixed(1) : 0;
+
+  const weightStats = useMemo(() => {
+    if (sortedWeight.length < 2) return null;
+    const first = sortedWeight[0];
+    const last = sortedWeight[sortedWeight.length - 1];
+    return { first, last, delta: +(last.weight - first.weight).toFixed(1) };
+  }, [sortedWeight]);
+
+  const measurementStats = useMemo(() => {
+    if (sortedMeasurements.length < 2) return [];
+    const first = sortedMeasurements[0];
+    const last = sortedMeasurements[sortedMeasurements.length - 1];
+    return MEASURE_FIELDS
+      .filter(({ key }) => first.values[key] != null && last.values[key] != null)
+      .map(({ key, label }) => ({ key, label, delta: +(last.values[key] - first.values[key]).toFixed(1) }));
+  }, [sortedMeasurements]);
+
+  const strengthStats = useMemo(() => {
+    return Object.entries(exerciseHistory)
+      .filter(([, arr]) => arr.length >= 2)
+      .map(([name, arr]) => {
+        const first = arr[0].weight;
+        const last = arr[arr.length - 1].weight;
+        const delta = +(last - first).toFixed(1);
+        const pct = first > 0 ? Math.round((delta / first) * 100) : 0;
+        return { name, first, last, delta, pct };
+      })
+      .sort((a, b) => b.pct - a.pct);
+  }, [exerciseHistory]);
+
+  const dayLabelOf = (day) => PROGRAM[day]?.title || `День ${day}`;
+
+  return (
+    <div className="dash-root">
+      <div className="dash-inner">
+        <div className="header">
+          <div>
+            <h1>Прогресс</h1>
+            <div className="sub">Вес · замеры · тренировки</div>
+          </div>
+          <div className="date-pill">{fmtDate(todayStr()).toUpperCase()}</div>
+        </div>
+
+        {error && <div className="error-banner">{error}</div>}
+
+        {loading ? (
+          <div className="loading-state">загрузка...</div>
+        ) : (
+          <>
+            <div className="tabs">
+              {[
+                ["overview", "Обзор"],
+                ["weight", "Вес"],
+                ["measurements", "Замеры"],
+                ["workouts", "Тренировки"],
+                ["stats", "Статистика"],
+              ].map(([key, label]) => (
+                <button key={key} className={`tab-btn ${tab === key ? "active" : ""}`} onClick={() => setTab(key)}>{label}</button>
+              ))}
+            </div>
+
+            {tab === "overview" && (
+              <>
+                <div className="stats-row">
+                  <StatCard
+                    icon={<IconScale size={18} />} label="Текущий вес"
+                    value={latestWeight ? `${latestWeight.weight} кг` : "—"}
+                    sub={weightDelta != null ? `${weightDelta > 0 ? "+" : ""}${weightDelta} кг с прошлого раза` : "нет данных"}
+                    trend={weightDelta == null ? null : weightDelta > 0 ? "up" : weightDelta < 0 ? "down" : "flat"}
+                  />
+                  <StatCard
+                    icon={<IconRuler size={18} />} label="Талия"
+                    value={latestMeasurement?.values?.waist != null ? `${latestMeasurement.values.waist} см` : "—"}
+                    sub={waistDelta != null ? `${waistDelta > 0 ? "+" : ""}${waistDelta} см с прошлого раза` : "нет данных"}
+                    trend={waistDelta == null ? null : waistDelta > 0 ? "up" : waistDelta < 0 ? "down" : "flat"}
+                  />
+                  <StatCard
+                    ring={{ value: Math.min(sessionsThisWeek, 4), max: 4 }}
+                    label="Тренировок за неделю" value={`${sessionsThisWeek} из 4`}
+                    sub={`всего записей: ${sessionsLog.length}`}
+                  />
+                </div>
+                <div className="card">
+                  <h2>Динамика веса</h2>
+                  {weightChartData.length > 1
+                    ? <GradientArea data={weightChartData} dataKey="weight" gradId="gradOverviewWeight" color={COLORS.cyan} unit="кг" />
+                    : <EmptyState text="Добавьте хотя бы 2 записи веса, чтобы увидеть график." />}
+                </div>
+              </>
+            )}
+
+            {tab === "weight" && (
+              <div className="card">
+                <h2>Записи веса</h2>
+                <div className="form-row">
+                  <div className="field"><label>Дата</label><input type="date" value={weightForm.date} onChange={(e) => setWeightForm({ ...weightForm, date: e.target.value })} /></div>
+                  <div className="field"><label>Вес, кг</label><input type="number" step="0.1" placeholder="72.5" value={weightForm.weight} onChange={(e) => setWeightForm({ ...weightForm, weight: e.target.value })} /></div>
+                </div>
+                <button className="btn" onClick={addWeight}><IconPlus size={15} /> Добавить</button>
+                {weightChartData.length > 1 && (
+                  <div style={{ marginTop: 18, marginBottom: 4 }}>
+                    <GradientArea data={weightChartData} dataKey="weight" gradId="gradWeightTab" color={COLORS.cyan} unit="кг" />
+                  </div>
+                )}
+                {sortedWeight.length === 0 ? <EmptyState text="Пока нет записей веса." /> : (
+                  <div className="table-wrap" style={{ marginTop: 10 }}>
+                    <table>
+                      <thead><tr><th>Дата</th><th>Вес</th><th className="del-cell"></th></tr></thead>
+                      <tbody>
+                        {[...sortedWeight].reverse().map((e) => (
+                          <tr key={e.id}>
+                            <td>{fmtDate(e.date)}</td><td>{e.weight} кг</td>
+                            <td className="del-cell"><button className="icon-btn" onClick={() => deleteEntry("weight", e.id)}><IconTrash size={14} /></button></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {tab === "measurements" && (
+              <div className="card">
+                <SectionAccent label="Замеры тела" unit="см" />
+                <div className="form-row">
+                  <div className="field"><label>Дата</label><input type="date" value={measureForm.date} onChange={(e) => setMeasureForm({ ...measureForm, date: e.target.value })} /></div>
+                  {MEASURE_FIELDS.map(({ key, label }) => (
+                    <div className="field" key={key}><label>{label}</label><input type="number" step="0.1" placeholder="—" value={measureForm[key]} onChange={(e) => setMeasureForm({ ...measureForm, [key]: e.target.value })} /></div>
+                  ))}
+                </div>
+                <button className="btn" onClick={addMeasurement}><IconPlus size={15} /> Добавить</button>
+
+                {sortedMeasurements.length > 0 && (
+                  <>
+                    <div className="segmented" style={{ marginTop: 20 }}>
+                      {MEASURE_FIELDS.map(({ key, label }) => (
+                        <button key={key} className={selectedMeasureField === key ? "active" : ""} onClick={() => setSelectedMeasureField(key)}>{label}</button>
+                      ))}
+                    </div>
+                    {measureChartData.length > 1
+                      ? <GradientArea data={measureChartData} dataKey="value" gradId="gradMeasure" color={COLORS.violet} unit="см" />
+                      : <EmptyState text="Добавьте ещё одну запись этого замера, чтобы увидеть график." />}
+                  </>
+                )}
+
+                {sortedMeasurements.length === 0 ? <EmptyState text="Пока нет записей замеров." /> : (
+                  <div className="table-wrap" style={{ marginTop: 10 }}>
+                    <table>
+                      <thead><tr><th>Дата</th>{MEASURE_FIELDS.map(({ key, label }) => <th key={key}>{label}</th>)}<th className="del-cell"></th></tr></thead>
+                      <tbody>
+                        {[...sortedMeasurements].reverse().map((e) => (
+                          <tr key={e.id}>
+                            <td>{fmtDate(e.date)}</td>
+                            {MEASURE_FIELDS.map(({ key }) => <td key={key}>{e.values[key] != null ? e.values[key] : "—"}</td>)}
+                            <td className="del-cell"><button className="icon-btn" onClick={() => deleteEntry("measurement", e.id)}><IconTrash size={14} /></button></td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {tab === "workouts" && (
+              <>
+                <div className="card">
+                  <h2><IconDumbbell size={16} /> Записать тренировку</h2>
+                  <div className="form-row">
+                    <div className="field"><label>Дата</label><input type="date" value={logDate} onChange={(e) => setLogDate(e.target.value)} /></div>
+                  </div>
+                  <div className="day-picker">
+                    {Object.keys(PROGRAM).map((d) => (
+                      <button key={d} className={Number(d) === logDay ? "active" : ""} onClick={() => switchLogDay(Number(d))}>{PROGRAM[d].title}</button>
+                    ))}
+                  </div>
+                  <div>
+                    {PROGRAM[logDay].exercises.map((ex) => {
+                      const prev = exerciseHistory[ex.name];
+                      const lastWeight = prev && prev.length ? prev[prev.length - 1].weight : null;
+                      return (
+                        <div className="ex-row" key={ex.name}>
+                          <span className="ex-name">{ex.name}</span>
+                          <span className="set-badge">{ex.sets} подх.</span>
+                          <input
+                            type="number" step="0.5"
+                            placeholder={lastWeight != null ? `посл. ${lastWeight}` : "кг"}
+                            value={logWeights[ex.name] || ""}
+                            onChange={(e) => setLogWeights({ ...logWeights, [ex.name]: e.target.value })}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button className="btn" style={{ marginTop: 16 }} onClick={saveSession}><IconPlus size={15} /> Сохранить тренировку</button>
+                </div>
+
+                {allExerciseNames.length > 0 && (
+                  <div className="card">
+                    <h2>Прогресс по упражнению</h2>
+                    <div className="segmented">
+                      {allExerciseNames.map((n) => (
+                        <button key={n} className={selectedExercise === n ? "active" : ""} onClick={() => setSelectedExercise(n)}>{n}</button>
+                      ))}
+                    </div>
+                    {exerciseChartData.length > 1
+                      ? <GradientArea data={exerciseChartData} dataKey="weight" gradId="gradExercise" color={COLORS.mint} unit="кг" />
+                      : <EmptyState text="Добавьте ещё одну тренировку с этим упражнением, чтобы увидеть график." />}
+                  </div>
+                )}
+
+                <div className="card">
+                  <h2>История тренировок</h2>
+                  {sortedSessions.length === 0 ? <EmptyState text="Пока нет записанных тренировок." /> : (
+                    sortedSessions.map((s) => (
+                      <div className="session-entry" key={s.id}>
+                        <div className="session-entry-head">
+                          <span className="day-tag">{dayLabelOf(s.day)}</span>
+                          <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                            <span className="ex-date">{fmtDate(s.date)}</span>
+                            <button className="icon-btn" onClick={() => deleteEntry("session", s.id)}><IconTrash size={14} /></button>
+                          </span>
+                        </div>
+                        <div>
+                          {Object.entries(s.weights).map(([name, w]) => {
+                            const isPr = bestByExercise[name] === Number(w) && Number(w) > 0;
+                            return (
+                              <span className="set-chip" key={name}>
+                                {name}: {w} кг{isPr && <PrBadge />}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+
+            {tab === "stats" && (
+              <>
+                <div className="card">
+                  <h2><IconZap size={16} /> Общая картина</h2>
+                  <div className="insight-note">
+                    Отслеживаешь примерно {totalWeeksTracked} {totalWeeksTracked === 1 ? "неделю" : totalWeeksTracked < 5 ? "недели" : "недель"}.
+                    В среднем {avgSessionsPerWeek} трен./нед. Всего тренировок: {sessionsLog.length}, записей веса: {weightLog.length}, замеров: {measurementsLog.length}.
+                  </div>
+                </div>
+
+                <div className="card">
+                  <h2><IconScale size={16} /> Вес</h2>
+                  {weightStats ? (
+                    <div className="insight-row">
+                      <span>{fmtDate(weightStats.first.date)} → {fmtDate(weightStats.last.date)}</span>
+                      <span className={`delta ${weightStats.delta > 0 ? "up" : weightStats.delta < 0 ? "down" : "flat"}`}>
+                        {weightStats.delta > 0 ? <IconTrendUp size={14} /> : weightStats.delta < 0 ? <IconTrendDown size={14} /> : <IconMinus size={14} />}
+                        {weightStats.delta > 0 ? "+" : ""}{weightStats.delta} кг ({weightStats.first.weight} → {weightStats.last.weight})
+                      </span>
+                    </div>
+                  ) : <EmptyState text="Нужно минимум 2 записи веса для вывода." />}
+                </div>
+
+                <div className="card">
+                  <SectionAccent label="Замеры — изменение с первой записи" unit="см" />
+                  {measurementStats.length ? measurementStats.map((m) => (
+                    <div className="insight-row" key={m.key}>
+                      <span>{m.label}</span>
+                      <span className={`delta ${m.delta > 0 ? "up" : m.delta < 0 ? "down" : "flat"}`}>
+                        {m.delta > 0 ? <IconTrendUp size={14} /> : m.delta < 0 ? <IconTrendDown size={14} /> : <IconMinus size={14} />}
+                        {m.delta > 0 ? "+" : ""}{m.delta} см
+                      </span>
+                    </div>
+                  )) : <EmptyState text="Нужно минимум 2 записи замеров для вывода." />}
+                </div>
+
+                <div className="card">
+                  <h2><IconBarChart size={16} /> Силовой прогресс</h2>
+                  {strengthStats.length ? strengthStats.map((s) => (
+                    <div className="insight-row" key={s.name}>
+                      <span>{s.name}</span>
+                      <span className={`delta ${s.delta > 0 ? "down" : s.delta < 0 ? "up" : "flat"}`}>
+                        {s.first} → {s.last} кг ({s.delta > 0 ? "+" : ""}{s.delta}, {s.pct > 0 ? "+" : ""}{s.pct}%)
+                      </span>
+                    </div>
+                  )) : <EmptyState text="Запиши одно и то же упражнение хотя бы дважды, чтобы увидеть прогресс." />}
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<FitnessDashboard />);
+</script>
+</body>
+</html>
