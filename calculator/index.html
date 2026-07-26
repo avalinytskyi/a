@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор расчёта прибыльности рекламы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #060606;
+    --card: #0F0F0F;
+    --card-line: rgba(232,179,8,0.30);
+    --card-line-soft: rgba(255,255,255,0.09);
+    --gold: #E8B308;
+    --gold-bright: #FFD65C;
+    --ink: #0A0A0A;
+    --white: #FFFFFF;
+    --grey: #B7B8C0;
+    --grey-dim: #7A7B85;
+    --green: #35D08A;
+    --red: #F0564A;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    color: var(--white);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  .wrap{ max-width: 1140px; margin:0 auto; padding: 0 20px 70px; position:relative; }
+  @media (max-width: 480px){ .wrap{ padding: 0 12px 60px; } }
+
+  /* ---------- HEADER / HERO GLOW ---------- */
+  .hero-bg{
+    position:relative;
+    padding: 44px 20px 30px;
+    margin: 0 -20px 8px;
+    text-align:center;
+    overflow:hidden;
+    background:
+      radial-gradient(ellipse 700px 420px at 50% -10%, rgba(232,179,8,0.22), transparent 60%),
+      radial-gradient(ellipse 500px 300px at 15% 100%, rgba(232,179,8,0.10), transparent 60%),
+      radial-gradient(ellipse 500px 300px at 85% 100%, rgba(232,179,8,0.10), transparent 60%);
+  }
+  @media (max-width: 480px){ .hero-bg{ margin: 0 -12px 8px; padding: 36px 14px 24px; } }
+  .bolt-svg{ position:absolute; inset:0; width:100%; height:100%; opacity:0.5; pointer-events:none; }
+  header.top{ position:relative; z-index:1; }
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:11px;
+    letter-spacing:0.22em; text-transform:uppercase; color: var(--gold-bright);
+    margin-bottom: 16px;
+  }
+  h1{
+    font-family:'Unbounded', sans-serif; font-weight:800;
+    font-size: clamp(26px, 6vw, 46px); line-height:1.08; letter-spacing:-0.02em;
+    text-transform:uppercase; max-width: 780px; margin: 0 auto 14px;
+    color: var(--white);
+  }
+  h1 .hl{
+    background: linear-gradient(120deg, var(--gold-bright), var(--gold));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  header.top p{ color: var(--grey); font-size: 14px; max-width: 480px; margin: 0 auto; line-height:1.6; }
+
+  /* ---------- SECTION LABEL ---------- */
+  .section-label{
+    font-family:'Unbounded', sans-serif; font-weight:600; font-size: 12px;
+    letter-spacing:0.08em; text-transform:uppercase; color: var(--gold-bright);
+    margin: 30px 0 12px;
+  }
+
+  /* ---------- DARK CARD ---------- */
+  .card{
+    background: var(--card);
+    border: 1.5px solid var(--card-line);
+    border-radius: 18px;
+  }
+
+  /* ---------- NICHE TABS ---------- */
+  .tabs{ display:flex; flex-wrap:wrap; gap:8px; padding: 16px; }
+  .tab{
+    font-family:'Inter', sans-serif; font-weight:600; font-size: 13px;
+    color: var(--grey);
+    background: transparent;
+    border: 1.5px solid var(--card-line-soft);
+    padding: 9px 16px; border-radius: 30px;
+    cursor:pointer; transition: all .15s ease; white-space: nowrap;
+  }
+  .tab:hover{ border-color: var(--gold); color: var(--white); }
+  .tab.active{
+    color: var(--ink);
+    background: linear-gradient(120deg, var(--gold-bright), var(--gold));
+    border-color: transparent;
+    font-weight:800;
+    box-shadow: 0 4px 16px rgba(232,179,8,0.28);
+  }
+  .tab .rec-dot{
+    display:inline-block; width:6px; height:6px; border-radius:50%;
+    background: var(--green); margin-left:7px; vertical-align:middle;
+  }
+  .tab.active .rec-dot{ background: var(--ink); }
+
+  /* ---------- SEGMENTED ---------- */
+  .controls-row{ display:grid; grid-template-columns: 1.3fr 0.9fr 1.1fr; gap: 12px; }
+  @media (max-width: 900px){ .controls-row{ grid-template-columns: 1fr; } }
+  .segmented{ display:flex; gap:4px; padding: 5px; }
+  .seg-btn{
+    flex:1;
+    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size: 12px;
+    color: var(--grey);
+    background: transparent; border:none;
+    padding: 11px 6px; border-radius: 12px; cursor:pointer; transition: all .15s ease;
+    text-align:center;
+  }
+  .seg-btn:hover{ color: var(--white); }
+  .seg-btn.active{
+    color: var(--ink);
+    background: linear-gradient(120deg, var(--gold-bright), var(--gold));
+  }
+
+  /* ---------- INPUTS ---------- */
+  .inputs-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 18px; }
+  @media (max-width: 820px){ .inputs-grid{ grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 420px){ .inputs-grid{ grid-template-columns: 1fr; } }
+  .field label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'Inter', sans-serif; font-weight:700;
+    font-size: 11px; text-transform:uppercase; letter-spacing:0.03em;
+    color: var(--grey); margin-bottom: 8px;
+  }
+  .field label .tag{
+    font-family:'IBM Plex Mono', monospace; font-weight:600; font-size: 9px;
+    color: var(--grey-dim); border:1px solid var(--card-line-soft); padding: 2px 6px; border-radius:20px;
+    text-transform:none; letter-spacing:0;
+  }
+  .input-wrap{ position:relative; }
+  input[type=number]{
+    width:100%;
+    background: #000;
+    border: 1.5px solid var(--card-line-soft);
+    color: var(--white);
+    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size: 16px;
+    padding: 12px 14px; border-radius: 12px; outline:none;
+    transition: border-color .15s ease;
+  }
+  input[type=number]:focus{ border-color: var(--gold); }
+  input[type=number]:disabled{ color: var(--gold-bright); opacity:1; -webkit-text-fill-color: var(--gold-bright); }
+  .suffix{
+    position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:12.5px; color: var(--grey-dim);
+    pointer-events:none;
+  }
+  .reset-row{ display:flex; justify-content:flex-end; padding: 2px 18px 18px; }
+  .reset-btn{
+    background: transparent; color: var(--gold-bright);
+    border:1.5px solid var(--card-line); font-family:'Inter',sans-serif; font-weight:700; font-size:12.5px;
+    padding: 9px 16px; border-radius: 20px; cursor:pointer; transition: all .15s ease;
+  }
+  .reset-btn:hover{ background: var(--gold); color: var(--ink); border-color: transparent; }
+
+  /* ---------- CAPTURE CARD (то, что уходит в скриншот) ---------- */
+  .capture-card{
+    background: var(--bg);
+    border-radius: 22px;
+    padding: 4px;
+  }
+  .capture-header{
+    display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 14px;
+  }
+  .pill{
+    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size: 11px;
+    padding: 6px 13px; border-radius: 20px;
+    background: var(--card); border: 1.5px solid var(--card-line);
+    color: var(--gold-bright);
+  }
+  .pill.strong{ background: linear-gradient(120deg, var(--gold-bright), var(--gold)); color: var(--ink); border-color:transparent; }
+
+  /* ---------- HERO RESULTS ---------- */
+  .hero-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px){ .hero-row{ grid-template-columns: 1fr; } }
+  .hero-card{ padding: 26px 26px 22px; border-radius: 20px; position:relative; overflow:hidden; }
+  .hero-card.revenue{ background: linear-gradient(135deg, var(--gold-bright), var(--gold)); color: var(--ink); }
+  .hero-card.profit{ background: var(--card); border: 1.5px solid var(--card-line); color: var(--white); }
+  .hero-card .h-label{
+    font-family:'Unbounded', sans-serif; font-weight:700; font-size: 11px;
+    letter-spacing:0.08em; text-transform:uppercase; opacity:0.7; margin-bottom: 10px;
+  }
+  .hero-card .h-value{
+    font-family:'Unbounded', sans-serif; font-weight:800;
+    font-size: clamp(28px, 6vw, 44px); line-height: 1; letter-spacing:-0.02em;
+    word-break: break-word;
+  }
+  .hero-card.profit .h-value.neg{ color: var(--red); }
+  .hero-card.profit .h-value.pos{ color: var(--green); }
+  .hero-card .h-sub{ margin-top: 10px; font-size: 12px; opacity:0.7; font-weight:600; }
+
+  /* ---------- FUNNEL SMALL STAGES ---------- */
+  .funnel-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top:14px; }
+  @media (max-width: 480px){ .funnel-row{ grid-template-columns: 1fr; } }
+  .stage{ padding: 20px 22px; }
+  .stage .s-label{
+    font-family:'Unbounded', sans-serif; font-weight:600; font-size:10.5px;
+    letter-spacing:0.08em; text-transform:uppercase; color: var(--grey); margin-bottom:8px;
+  }
+  .stage .s-value{ font-family:'Unbounded', sans-serif; font-weight:700; font-size: 28px; color: var(--gold-bright); }
+  .stage .s-sub{ font-size:11.5px; color: var(--grey-dim); margin-top:6px; font-weight:600; }
+
+  /* ---------- BARS ---------- */
+  .bars-card{ padding: 26px 26px; margin-top:14px; }
+  .bars-card h3{
+    font-family:'Unbounded', sans-serif; font-weight:600; font-size:11px;
+    letter-spacing:0.08em; text-transform:uppercase; color: var(--grey); margin-bottom: 20px;
+  }
+  .bar-row{ display:grid; grid-template-columns: 80px 1fr auto; align-items:center; gap:14px; margin-bottom:14px; }
+  @media (max-width: 420px){ .bar-row{ grid-template-columns: 60px 1fr auto; gap:8px; } }
+  .bar-row:last-child{ margin-bottom:0; }
+  .bar-label{ font-size:12px; font-weight:700; color: var(--grey); }
+  .bar-track{ background: #000; border:1.5px solid var(--card-line-soft); border-radius: 8px; height: 26px; overflow:hidden; }
+  .bar-fill{ height:100%; border-radius:6px; transition: width .45s cubic-bezier(.4,0,.2,1); min-width:3px; }
+  .bar-fill.budget{ background: linear-gradient(90deg, #555, #888); }
+  .bar-fill.revenue{ background: linear-gradient(90deg, var(--gold), var(--gold-bright)); }
+  .bar-fill.profit-pos{ background: linear-gradient(90deg, #1B8A5A, var(--green)); }
+  .bar-fill.profit-neg{ background: linear-gradient(90deg, #8A2E27, var(--red)); }
+  .bar-value{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:12px; text-align:right; min-width:88px; color: var(--white); }
+
+  /* ---------- STATS ---------- */
+  .stats-row{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top:14px; }
+  @media (max-width: 560px){ .stats-row{ grid-template-columns: 1fr; } }
+  .stat-card{ padding: 22px 22px; }
+  .stat-card .s-label{
+    font-family:'Unbounded', sans-serif; font-weight:600; font-size:10px;
+    letter-spacing:0.06em; text-transform:uppercase; color: var(--grey); margin-bottom:8px;
+  }
+  .stat-card .s-value{ font-family:'Unbounded', sans-serif; font-size: 24px; font-weight:700; color: var(--white); }
+  .stat-card .s-value.pos{ color: var(--green); }
+  .stat-card .s-value.neg{ color: var(--red); }
+  .stat-card .s-hint{ font-size:11px; color: var(--grey-dim); margin-top:6px; line-height:1.4; font-weight:600; }
+
+  /* ---------- 6-MONTH BLOCK ---------- */
+  .ltv-banner{
+    position:relative; overflow:hidden;
+    margin: 28px 0 12px;
+    padding: 20px 22px;
+    border-radius: 18px;
+    text-align:center;
+    background:
+      linear-gradient(100deg, rgba(232,179,8,0.16), rgba(232,179,8,0.04) 40%, rgba(232,179,8,0.16)),
+      #0F0F0F;
+    border: 1.5px solid var(--card-line);
+  }
+  .ltv-banner .tiny{
+    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:10.5px;
+    letter-spacing:0.16em; text-transform:uppercase; color: var(--gold-bright); margin-bottom:8px;
+  }
+  .ltv-banner h2{
+    font-family:'Unbounded', sans-serif; font-weight:800; font-size: clamp(17px,3.4vw,25px);
+    text-transform:uppercase; letter-spacing:-0.01em; color: var(--white);
+  }
+  .ltv-banner p{ color: var(--grey); font-size: 12.5px; margin-top: 8px; max-width: 520px; margin-left:auto; margin-right:auto; line-height:1.5; }
+
+  #ltvSection{ display:none; }
+  .ltv-input-row{ display:grid; grid-template-columns: repeat(2,1fr); gap: 12px; padding: 18px; }
+  @media (max-width: 480px){ .ltv-input-row{ grid-template-columns: 1fr; } }
+  .ltv-hero-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top:14px; }
+  @media (max-width: 640px){ .ltv-hero-row{ grid-template-columns: 1fr; } }
+
+  .capture-footer{
+    margin-top: 16px; text-align:center; font-size:10.5px; color: var(--grey-dim);
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  /* ---------- DOWNLOAD ---------- */
+  .download-row{ display:flex; justify-content:center; margin-top: 22px; }
+  .download-btn{
+    display:inline-flex; align-items:center; gap:9px;
+    font-family:'Unbounded', sans-serif; font-weight:700; font-size: 13px;
+    color: var(--ink);
+    background: linear-gradient(120deg, var(--gold-bright), var(--gold));
+    border:none; padding: 15px 28px; border-radius: 30px; cursor:pointer;
+    box-shadow: 0 8px 24px rgba(232,179,8,0.28);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .download-btn:hover{ transform: translateY(-1px); box-shadow: 0 10px 30px rgba(232,179,8,0.4); }
+  .download-btn:active{ transform: translateY(0); }
+  .download-btn.loading{ opacity:0.7; pointer-events:none; }
+
+  footer.credit{
+    margin-top: 20px; text-align:center; font-size:11px; color: var(--grey-dim);
+    font-family:'IBM Plex Mono', monospace; line-height:1.7;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hero-bg">
+    <svg class="bolt-svg" viewBox="0 0 700 260" preserveAspectRatio="none">
+      <path d="M120 0 L60 110 L110 110 L20 260 L160 90 L105 90 Z" fill="rgba(232,179,8,0.10)"/>
+      <path d="M620 0 L560 100 L610 100 L500 260 L660 80 L600 80 Z" fill="rgba(232,179,8,0.08)"/>
+    </svg>
+    <header class="top">
+      <div class="eyebrow">Демонстрация для клиента</div>
+      <h1>Калькулятор <span class="hl">расчёта прибыльности</span> рекламы</h1>
+      <p>Выберите услугу, локацию и сценарий конверсии — остальное посчитается само. Любое значение можно поправить прямо на созвоне.</p>
+    </header>
+  </div>
+
+  <div class="section-label">Услуга</div>
+  <div class="card tabs" id="nicheTabs"></div>
+
+  <div class="section-label">Локация, валюта и сценарий конверсии</div>
+  <div class="controls-row">
+    <div class="card segmented" id="geoTabs"></div>
+    <div class="card segmented" id="curTabs"></div>
+    <div class="card segmented" id="scenarioTabs"></div>
+  </div>
+
+  <div class="section-label">Параметры</div>
+  <div class="card">
+    <div class="inputs-grid">
+      <div class="field">
+        <label>Бюджет на тест <span class="tag">ввод</span></label>
+        <div class="input-wrap">
+          <input type="number" id="budget" min="0" step="10">
+          <span class="suffix" id="sfx-budget">$</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Цена заявки <span class="tag">авто</span></label>
+        <div class="input-wrap">
+          <input type="number" id="cpl" min="0" step="0.5">
+          <span class="suffix" id="sfx-cpl">$</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Конверсия в клиента <span class="tag">авто</span></label>
+        <div class="input-wrap">
+          <input type="number" id="conv" min="0" max="100" step="1">
+          <span class="suffix">%</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Средний чек <span class="tag">авто</span></label>
+        <div class="input-wrap">
+          <input type="number" id="check" min="0" step="10">
+          <span class="suffix" id="sfx-check">$</span>
+        </div>
+      </div>
+    </div>
+    <div class="reset-row">
+      <button class="reset-btn" id="resetBtn">↺ Сбросить к дефолту</button>
+    </div>
+  </div>
+
+  <div class="section-label">Результат</div>
+
+  <div id="captureArea" class="capture-card">
+
+    <div class="capture-header">
+      <span class="pill strong" id="pillNiche">—</span>
+      <span class="pill" id="pillGeo">—</span>
+      <span class="pill" id="pillCur">—</span>
+      <span class="pill" id="pillScenario">—</span>
+    </div>
+
+    <div class="hero-row">
+      <div class="card hero-card revenue">
+        <div class="h-label">Выручка</div>
+        <div class="h-value" id="outRevenue">$0</div>
+        <div class="h-sub">клиенты × средний чек</div>
+      </div>
+      <div class="card hero-card profit">
+        <div class="h-label">Чистая прибыль</div>
+        <div class="h-value" id="outProfit">$0</div>
+        <div class="h-sub">выручка − бюджет на рекламу</div>
+      </div>
+    </div>
+
+    <div class="funnel-row">
+      <div class="card stage">
+        <div class="s-label">Заявки</div>
+        <div class="s-value" id="outLeads">0</div>
+        <div class="s-sub">бюджет ÷ цена заявки</div>
+      </div>
+      <div class="card stage">
+        <div class="s-label">Клиенты</div>
+        <div class="s-value" id="outClients">0</div>
+        <div class="s-sub">заявки × конверсия</div>
+      </div>
+    </div>
+
+    <div class="card bars-card">
+      <h3>Бюджет → Выручка → Прибыль</h3>
+      <div class="bar-row">
+        <div class="bar-label">Бюджет</div>
+        <div class="bar-track"><div class="bar-fill budget" id="barBudget" style="width:0%"></div></div>
+        <div class="bar-value" id="barBudgetVal">0</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Выручка</div>
+        <div class="bar-track"><div class="bar-fill revenue" id="barRevenue" style="width:0%"></div></div>
+        <div class="bar-value" id="barRevenueVal">0</div>
+      </div>
+      <div class="bar-row">
+        <div class="bar-label">Прибыль</div>
+        <div class="bar-track"><div class="bar-fill profit-pos" id="barProfit" style="width:0%"></div></div>
+        <div class="bar-value" id="barProfitVal">0</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="card stat-card">
+        <div class="s-label">ROI</div>
+        <div class="s-value" id="statRoi">0%</div>
+        <div class="s-hint">возврат на вложенный бюджет</div>
+      </div>
+      <div class="card stat-card">
+        <div class="s-label">ROAS</div>
+        <div class="s-value" id="statRoas">0×</div>
+        <div class="s-hint">выручка на 1 вложенную единицу</div>
+      </div>
+      <div class="card stat-card">
+        <div class="s-label">Стоимость клиента</div>
+        <div class="s-value" id="statCac">$0</div>
+        <div class="s-hint">бюджет ÷ количество клиентов</div>
+      </div>
+    </div>
+
+    <!-- 6-МЕСЯЧНЫЙ ПРОГНОЗ ДЛЯ ПОВТОРНЫХ УСЛУГ -->
+    <div id="ltvSection">
+      <div class="ltv-banner">
+        <div class="tiny">⚡ Клиент возвращается снова</div>
+        <h2>Выгода за 6 месяцев</h2>
+        <p>Не все клиенты приходят каждый месяц — часть отваливается. Расчёт учитывает процент возврата и показывает реалистичную выгоду за полгода.</p>
+      </div>
+
+      <div class="card">
+        <div class="ltv-input-row">
+          <div class="field">
+            <label>Возврат клиентов в месяц <span class="tag">авто</span></label>
+            <div class="input-wrap">
+              <input type="number" id="retentionRate" min="0" max="100" step="1">
+              <span class="suffix">%</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>LTV клиента <span class="tag">расчёт</span></label>
+            <div class="input-wrap">
+              <input type="number" id="ltvClient" disabled>
+              <span class="suffix" id="sfx-ltv">$</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="ltv-hero-row">
+        <div class="card hero-card revenue">
+          <div class="h-label">Выручка за 6 мес</div>
+          <div class="h-value" id="outRevenue6m">$0</div>
+          <div class="h-sub">с учётом оттока клиентов</div>
+        </div>
+        <div class="card hero-card profit">
+          <div class="h-label">Прибыль за 6 мес</div>
+          <div class="h-value" id="outProfit6m">$0</div>
+          <div class="h-sub">выручка за 6 мес − бюджет на тест</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="capture-footer" id="captureDate"></div>
+  </div>
+
+  <div class="download-row">
+    <button class="download-btn" id="downloadBtn">⬇ Скачать расчёт картинкой</button>
+  </div>
+
+  <footer class="credit">калькулятор прибыльности трафика для бьюти-мастеров · значения ориентировочные, редактируются вручную</footer>
+</div>
+
+<script>
+// ---------- DATA: бьюти-ниши ----------
+// recurring: услуга требует регулярных повторных визитов
+// retention: % клиентов, которые возвращаются каждый следующий месяц (остальные отваливаются)
+const NICHES = {
+  manicure:   { label: "Маникюр / педикюр",         cpl: 4,  check: 40,  recurring: true,  retention: 70 },
+  lashes:     { label: "Наращивание ресниц",         cpl: 5,  check: 55,  recurring: true,  retention: 65 },
+  botox:      { label: "Ботокс / уколы красоты",     cpl: 20, check: 350, recurring: false, retention: 0  },
+  permanent:  { label: "Перманентный макияж",        cpl: 15, check: 250, recurring: false, retention: 0  },
+  brows:      { label: "Брови / ламинирование",      cpl: 5,  check: 45,  recurring: true,  retention: 55 },
+  laser:      { label: "Лазерная эпиляция",          cpl: 12, check: 150, recurring: true,  retention: 60 },
+  facial:     { label: "Косметология лица",          cpl: 15, check: 180, recurring: true,  retention: 50 },
+  hardware:   { label: "Аппаратная косметология",    cpl: 14, check: 200, recurring: true,  retention: 55 },
+  hairext:    { label: "Наращивание волос",          cpl: 18, check: 400, recurring: false, retention: 0  },
+  spa:        { label: "SPA / массаж",               cpl: 8,  check: 90,  recurring: true,  retention: 45 },
+};
+
+// Сценарии отличаются конверсией заявки в запись — одинаковой для всех ниш
+const SCENARIOS = {
+  worst:   { label: "Минимальный",  conv: 12 },
+  optimal: { label: "Оптимальный",  conv: 20 },
+  ideal:   { label: "Идеальный",    conv: 30 },
+};
+
+const GEOS = {
+  dubai:  { label: "Дубай",  cplMult: 1.30, checkMult: 1.30 },
+  usa:    { label: "США",    cplMult: 1.50, checkMult: 1.40 },
+  canada: { label: "Канада", cplMult: 1.10, checkMult: 1.10 },
+  europe: { label: "Европа", cplMult: 1.00, checkMult: 1.00 },
+};
+
+const CURRENCIES = {
+  USD: { label: "USD", rate: 1,    symbol: "$" },
+  AED: { label: "AED", rate: 3.67, symbol: "AED " },
+  EUR: { label: "EUR", rate: 0.92, symbol: "€" },
+  CAD: { label: "CAD", rate: 1.38, symbol: "C$" },
+};
+
+let state = { niche: 'manicure', geo: 'dubai', currency: 'USD', scenario: 'optimal' };
+let prevValues = { leads:0, clients:0, revenue:0, profit:0, revenue6m:0, profit6m:0 };
+let current = {};
+
+const $ = id => document.getElementById(id);
+const budgetInp = $('budget'), cplInp = $('cpl'), convInp = $('conv'), checkInp = $('check');
+const retentionInp = $('retentionRate'), ltvClientInp = $('ltvClient');
+const ltvSection = $('ltvSection');
+
+function buildTabs(container, obj, stateKey, onSelect, cls){
+  container.innerHTML = '';
+  Object.entries(obj).forEach(([key, val]) => {
+    const btn = document.createElement('button');
+    btn.className = cls + (state[stateKey] === key ? ' active' : '');
+    btn.innerHTML = val.label + (val.recurring ? '<span class="rec-dot" title="Регулярная услуга"></span>' : '');
+    btn.addEventListener('click', () => {
+      state[stateKey] = key;
+      [...container.children].forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      onSelect();
+    });
+    container.appendChild(btn);
+  });
+}
+
+const nicheTabsEl = $('nicheTabs'), geoTabsEl = $('geoTabs'), curTabsEl = $('curTabs'), scenarioTabsEl = $('scenarioTabs');
+buildTabs(nicheTabsEl, NICHES, 'niche', applyDefaults, 'tab');
+buildTabs(geoTabsEl, GEOS, 'geo', applyDefaults, 'seg-btn');
+buildTabs(curTabsEl, CURRENCIES, 'currency', applyDefaults, 'seg-btn');
+buildTabs(scenarioTabsEl, SCENARIOS, 'scenario', applyScenario, 'seg-btn');
+
+function fmt(n, decimals=0){
+  return Number(n).toLocaleString('ru-RU', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+function money(n){
+  const cur = CURRENCIES[state.currency];
+  const sign = n < 0 ? '−' : '';
+  return sign + cur.symbol + fmt(Math.abs(n), 0);
+}
+function round1(v){ return Math.round(v*10)/10; }
+
+function updateSuffixes(){
+  const sym = CURRENCIES[state.currency].symbol.trim();
+  $('sfx-budget').textContent = sym;
+  $('sfx-cpl').textContent = sym;
+  $('sfx-check').textContent = sym;
+  $('sfx-ltv').textContent = sym;
+}
+
+function updatePills(){
+  $('pillNiche').textContent = NICHES[state.niche].label;
+  $('pillGeo').textContent = GEOS[state.geo].label;
+  $('pillCur').textContent = state.currency;
+  $('pillScenario').textContent = SCENARIOS[state.scenario].label + ' сценарий';
+}
+
+function applyDefaults(){
+  const n = NICHES[state.niche];
+  const g = GEOS[state.geo];
+  const cur = CURRENCIES[state.currency];
+
+  const cpl = n.cpl * g.cplMult * cur.rate;
+  const check = n.check * g.checkMult * cur.rate;
+  const budget = cpl * 40;
+  const conv = SCENARIOS[state.scenario].conv;
+
+  budgetInp.value = Math.round(budget);
+  cplInp.value = round1(cpl);
+  convInp.value = conv;
+  checkInp.value = Math.round(check);
+  retentionInp.value = n.retention;
+
+  ltvSection.style.display = n.recurring ? 'block' : 'none';
+
+  updateSuffixes();
+  updatePills();
+  calculate();
+}
+
+// Смена сценария меняет только конверсию — бюджет, цену заявки и чек,
+// введённые/поправленные пользователем, не трогаем
+function applyScenario(){
+  convInp.value = SCENARIOS[state.scenario].conv;
+  updatePills();
+  calculate();
+}
+
+function animateValue(el, from, to, formatFn, duration=380){
+  const start = performance.now();
+  function step(now){
+    const t = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const val = from + (to - from) * eased;
+    el.textContent = formatFn(val);
+    if(t < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// Сколько раз в среднем клиент дойдёт за 6 месяцев.
+// Первый месяц приходят все клиенты. В каждый из следующих 5 месяцев
+// возвращается стабильно retention% от изначальных клиентов (без нарастающего оттока).
+function expectedVisits(retentionPct, months=6){
+  const r = Math.max(0, Math.min(1, retentionPct/100));
+  return 1 + r * (months - 1);
+}
+
+function calculate(){
+  const budget = parseFloat(budgetInp.value) || 0;
+  const cpl = parseFloat(cplInp.value) || 0.0001;
+  const conv = (parseFloat(convInp.value) || 0) / 100;
+  const check = parseFloat(checkInp.value) || 0;
+
+  const leads = budget / cpl;
+  const clients = leads * conv;
+  const revenue = clients * check;
+  const netProfit = revenue - budget; // маржа не учитывается — просто выручка минус бюджет
+  const roi = budget > 0 ? (netProfit / budget) * 100 : 0;
+  const roas = budget > 0 ? revenue / budget : 0;
+  const cac = clients > 0 ? budget / clients : 0;
+
+  animateValue($('outLeads'), prevValues.leads, leads, v => fmt(v, v < 10 ? 1 : 0));
+  animateValue($('outClients'), prevValues.clients, clients, v => fmt(v, v < 10 ? 1 : 0));
+  animateValue($('outRevenue'), prevValues.revenue, revenue, v => money(v));
+  animateValue($('outProfit'), prevValues.profit, netProfit, v => money(v));
+
+  const profitHero = $('outProfit');
+  profitHero.classList.toggle('pos', netProfit >= 0);
+  profitHero.classList.toggle('neg', netProfit < 0);
+
+  const maxVal = Math.max(budget, revenue, Math.abs(netProfit), 1);
+  $('barBudget').style.width = (budget / maxVal * 100) + '%';
+  $('barRevenue').style.width = (revenue / maxVal * 100) + '%';
+  const profitBar = $('barProfit');
+  profitBar.style.width = (Math.abs(netProfit) / maxVal * 100) + '%';
+  profitBar.className = 'bar-fill ' + (netProfit >= 0 ? 'profit-pos' : 'profit-neg');
+
+  $('barBudgetVal').textContent = money(budget);
+  $('barRevenueVal').textContent = money(revenue);
+  $('barProfitVal').textContent = money(netProfit);
+
+  const roiEl = $('statRoi');
+  roiEl.textContent = (roi >= 0 ? '+' : '') + fmt(roi, 0) + '%';
+  roiEl.classList.toggle('pos', roi >= 0);
+  roiEl.classList.toggle('neg', roi < 0);
+
+  $('statRoas').textContent = fmt(roas, 2) + '×';
+  $('statCac').textContent = money(cac);
+
+  // ---- 6-месячный прогноз с учётом оттока клиентов ----
+  if (NICHES[state.niche].recurring){
+    const retentionPct = Math.max(0, Math.min(100, parseFloat(retentionInp.value) || 0));
+    const visits = expectedVisits(retentionPct, 6);
+    const ltv = check * visits;
+    const revenue6m = revenue * visits;
+    const profit6m = revenue6m - budget;
+
+    ltvClientInp.value = Math.round(ltv);
+    animateValue($('outRevenue6m'), prevValues.revenue6m, revenue6m, v => money(v));
+    animateValue($('outProfit6m'), prevValues.profit6m, profit6m, v => money(v));
+    const profit6mEl = $('outProfit6m');
+    profit6mEl.classList.toggle('pos', profit6m >= 0);
+    profit6mEl.classList.toggle('neg', profit6m < 0);
+
+    prevValues.revenue6m = revenue6m;
+    prevValues.profit6m = profit6m;
+  }
+
+  prevValues.leads = leads;
+  prevValues.clients = clients;
+  prevValues.revenue = revenue;
+  prevValues.profit = netProfit;
+
+  current = { leads, clients, revenue, netProfit, roi, roas, cac };
+  if (NICHES[state.niche].recurring){
+    current.retentionPct = Math.max(0, Math.min(100, parseFloat(retentionInp.value) || 0));
+    current.ltv = parseFloat(ltvClientInp.value) || 0;
+    current.revenue6m = prevValues.revenue6m;
+    current.profit6m = prevValues.profit6m;
+  }
+}
+
+$('resetBtn').addEventListener('click', applyDefaults);
+[budgetInp, cplInp, convInp, checkInp, retentionInp].forEach(inp => inp.addEventListener('input', calculate));
+
+// ---------- РИСУЕМ КАРТОЧКУ РЕЗУЛЬТАТА НА CANVAS (без внешних библиотек) ----------
+function roundRectPath(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+function wrapText(ctx, text, cx, y, maxWidth, lineHeight){
+  const words = text.split(' ');
+  let line = '', lines = [];
+  for(let i = 0; i < words.length; i++){
+    const test = line + words[i] + ' ';
+    if (ctx.measureText(test).width > maxWidth && line !== ''){
+      lines.push(line.trim());
+      line = words[i] + ' ';
+    } else {
+      line = test;
+    }
+  }
+  lines.push(line.trim());
+  lines.forEach((l, idx) => ctx.fillText(l, cx, y + idx * lineHeight));
+  return lines.length;
+}
+
+function drawSummaryCanvas(){
+  const COL = {
+    gold: '#E8B308', goldBright: '#FFD65C', ink: '#0A0A0A', bg: '#060606',
+    card: '#0F0F0F', line: 'rgba(232,179,8,0.35)', white: '#FFFFFF',
+    grey: '#B7B8C0', greyDim: '#7A7B85', green: '#35D08A', red: '#F0564A'
+  };
+  const isRecurring = NICHES[state.niche].recurring;
+  const W = 880;
+  const H = isRecurring ? 1400 : 1040;
+  const SCALE = 2;
+  const pad = 44;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W * SCALE;
+  canvas.height = H * SCALE;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(SCALE, SCALE);
+
+  const F_HEAD = "'Unbounded', sans-serif";
+  const F_BODY = "'Inter', sans-serif";
+  const F_MONO = "'IBM Plex Mono', monospace";
+
+  // фон
+  ctx.fillStyle = COL.bg;
+  ctx.fillRect(0, 0, W, H);
+  let glow = ctx.createRadialGradient(W/2, -30, 10, W/2, -30, 420);
+  glow.addColorStop(0, 'rgba(232,179,8,0.22)');
+  glow.addColorStop(1, 'rgba(232,179,8,0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, W, 320);
+
+  ctx.textAlign = 'center';
+  let y = pad + 14;
+
+  ctx.fillStyle = COL.goldBright;
+  ctx.font = `700 12px ${F_MONO}`;
+  ctx.fillText('Р А С Ч Ё Т   П Р И Б Ы Л Ь Н О С Т И   Р Е К Л А М Ы', W/2, y);
+  y += 38;
+
+  ctx.fillStyle = COL.white;
+  ctx.font = `800 30px ${F_HEAD}`;
+  ctx.fillText(NICHES[state.niche].label, W/2, y);
+  y += 30;
+
+  ctx.fillStyle = COL.grey;
+  ctx.font = `600 14px ${F_MONO}`;
+  ctx.fillText(`${GEOS[state.geo].label}  ·  ${state.currency}  ·  ${SCENARIOS[state.scenario].label} сценарий`, W/2, y);
+  y += 34;
+
+  // helper: карточка-плашка
+  function box(x, by, w, h, filled){
+    if (filled){
+      const grad = ctx.createLinearGradient(x, by, x + w, by + h);
+      grad.addColorStop(0, COL.goldBright);
+      grad.addColorStop(1, COL.gold);
+      ctx.fillStyle = grad;
+      roundRectPath(ctx, x, by, w, h, 16);
+      ctx.fill();
+    } else {
+      ctx.fillStyle = COL.card;
+      roundRectPath(ctx, x, by, w, h, 16);
+      ctx.fill();
+      ctx.strokeStyle = COL.line;
+      ctx.lineWidth = 1.5;
+      roundRectPath(ctx, x, by, w, h, 16);
+      ctx.stroke();
+    }
+  }
+
+  function heroCard(x, by, w, h, label, value, filled, valueColor){
+    box(x, by, w, h, filled);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = filled ? 'rgba(10,10,10,0.65)' : COL.grey;
+    ctx.font = `700 11px ${F_HEAD}`;
+    ctx.fillText(label.toUpperCase(), x + 22, by + 30);
+    ctx.fillStyle = filled ? COL.ink : valueColor;
+    ctx.font = `800 32px ${F_HEAD}`;
+    ctx.fillText(value, x + 22, by + h - 24);
+  }
+
+  function smallStat(x, by, w, h, label, value, valueColor){
+    box(x, by, w, h, false);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = COL.grey;
+    ctx.font = `600 10.5px ${F_HEAD}`;
+    ctx.fillText(label.toUpperCase(), x + 18, by + 26);
+    ctx.fillStyle = valueColor || COL.goldBright;
+    ctx.font = `700 22px ${F_HEAD}`;
+    ctx.fillText(value, x + 18, by + h - 18);
+  }
+
+  const gap = 14;
+  const halfW = (W - pad*2 - gap) / 2;
+
+  // выручка / прибыль
+  const heroH = 118;
+  heroCard(pad, y, halfW, heroH, 'Выручка', money(current.revenue), true);
+  heroCard(pad + halfW + gap, y, halfW, heroH,
+    'Чистая прибыль', money(current.netProfit), false,
+    current.netProfit >= 0 ? COL.green : COL.red);
+  y += heroH + gap;
+
+  // заявки / клиенты
+  const stageH = 86;
+  smallStat(pad, y, halfW, stageH, 'Заявки', fmt(current.leads, current.leads < 10 ? 1 : 0), COL.goldBright);
+  smallStat(pad + halfW + gap, y, halfW, stageH, 'Клиенты', fmt(current.clients, current.clients < 10 ? 1 : 0), COL.goldBright);
+  y += stageH + gap;
+
+  // ROI / ROAS / CAC
+  const thirdW = (W - pad*2 - gap*2) / 3;
+  const statH = 86;
+  smallStat(pad, y, thirdW, statH, 'ROI', (current.roi >= 0 ? '+' : '') + fmt(current.roi, 0) + '%', current.roi >= 0 ? COL.green : COL.red);
+  smallStat(pad + thirdW + gap, y, thirdW, statH, 'ROAS', fmt(current.roas, 2) + '×', COL.white);
+  smallStat(pad + (thirdW + gap)*2, y, thirdW, statH, 'Стоимость клиента', money(current.cac), COL.white);
+  y += statH + gap;
+
+  if (isRecurring){
+    y += 20;
+    // баннер
+    const bannerH = 96;
+    ctx.fillStyle = COL.card;
+    roundRectPath(ctx, pad, y, W - pad*2, bannerH, 16);
+    ctx.fill();
+    ctx.strokeStyle = COL.line;
+    ctx.lineWidth = 1.5;
+    roundRectPath(ctx, pad, y, W - pad*2, bannerH, 16);
+    ctx.stroke();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = COL.goldBright;
+    ctx.font = `700 11px ${F_MONO}`;
+    ctx.fillText('⚡ КЛИЕНТ ВОЗВРАЩАЕТСЯ СНОВА', W/2, y + 26);
+    ctx.fillStyle = COL.white;
+    ctx.font = `800 19px ${F_HEAD}`;
+    ctx.fillText('ВЫГОДА ЗА 6 МЕСЯЦЕВ', W/2, y + 52);
+    ctx.fillStyle = COL.grey;
+    ctx.font = `500 12.5px ${F_BODY}`;
+    wrapText(ctx, `Возврат клиентов: ${fmt(current.retentionPct,0)}% в месяц · LTV клиента: ${money(current.ltv)}`, W/2, y + 76, W - pad*2 - 60, 16);
+    y += bannerH + gap;
+
+    heroCard(pad, y, halfW, heroH, 'Выручка за 6 мес', money(current.revenue6m), true);
+    heroCard(pad + halfW + gap, y, halfW, heroH,
+      'Прибыль за 6 мес', money(current.profit6m), false,
+      current.profit6m >= 0 ? COL.green : COL.red);
+    y += heroH + gap;
+  }
+
+  // футер
+  y += 18;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = COL.greyDim;
+  ctx.font = `500 11px ${F_MONO}`;
+  const now = new Date();
+  ctx.fillText('Расчёт от ' + now.toLocaleDateString('ru-RU', { day:'2-digit', month:'long', year:'numeric' }), W/2, y);
+
+  return canvas;
+}
+
+// ---------- СКАЧАТЬ КАРТИНКОЙ ----------
+const downloadBtn = $('downloadBtn');
+
+function resetDownloadBtn(){
+  downloadBtn.classList.remove('loading');
+  downloadBtn.textContent = '⬇ Скачать расчёт картинкой';
+}
+
+downloadBtn.addEventListener('click', async () => {
+  downloadBtn.classList.add('loading');
+  downloadBtn.textContent = 'Готовим изображение...';
+
+  try{
+    if (document.fonts && document.fonts.ready){
+      await document.fonts.ready.catch(() => {});
+    }
+
+    const canvas = drawSummaryCanvas();
+
+    canvas.toBlob(async (blob) => {
+      try{
+        if (!blob){
+          alert('Не получилось сохранить изображение. Попробуйте сделать скриншот экрана вручную.');
+          resetDownloadBtn();
+          return;
+        }
+
+        const file = new File([blob], 'raschet-pribylnosti.png', { type: 'image/png' });
+
+        // На телефоне — системный шеринг (можно сразу отправить клиенту или сохранить в галерею)
+        if (navigator.canShare && navigator.canShare({ files: [file] })){
+          try {
+            await navigator.share({ files: [file], title: 'Расчёт прибыльности рекламы' });
+            resetDownloadBtn();
+            return;
+          } catch (shareErr) {
+            // пользователь закрыл окно шеринга — пробуем обычное скачивание ниже
+          }
+        }
+
+        const url = URL.createObjectURL(blob);
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+        if (isIOS){
+          window.open(url, '_blank');
+          alert('Изображение открылось в новой вкладке. Нажмите и удерживайте на нём, затем выберите «Сохранить изображение».');
+        } else {
+          const link = document.createElement('a');
+          link.download = 'raschet-pribylnosti.png';
+          link.href = url;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        resetDownloadBtn();
+      } catch(innerErr){
+        console.error(innerErr);
+        alert('Не получилось сохранить изображение. Попробуйте ещё раз.');
+        resetDownloadBtn();
+      }
+    }, 'image/png');
+
+  } catch(e){
+    console.error(e);
+    alert('Не получилось сохранить изображение. Попробуйте ещё раз или сделайте скриншот экрана вручную.');
+    resetDownloadBtn();
+  }
+});
+
+applyDefaults();
+</script>
+
+</body>
+</html>
