@@ -102,16 +102,15 @@
   }
   .tab.active .rec-dot{ background: var(--ink); }
 
-  /* ---------- SEGMENTED ---------- */
-  .controls-row{ display:grid; grid-template-columns: 1.3fr 0.9fr 1.1fr; gap: 12px; }
-  @media (max-width: 900px){ .controls-row{ grid-template-columns: 1fr; } }
-  .segmented{ display:flex; gap:4px; padding: 5px; }
+  /* ---------- SEGMENTED (geo) ---------- */
+  .segmented{ display:flex; gap:4px; padding: 5px; flex-wrap:wrap; }
   .seg-btn{
     flex:1;
-    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size: 12px;
+    min-width: 120px;
+    font-family:'IBM Plex Mono', monospace; font-weight:700; font-size: 12.5px;
     color: var(--grey);
     background: transparent; border:none;
-    padding: 11px 6px; border-radius: 12px; cursor:pointer; transition: all .15s ease;
+    padding: 11px 8px; border-radius: 12px; cursor:pointer; transition: all .15s ease;
     text-align:center;
   }
   .seg-btn:hover{ color: var(--white); }
@@ -121,8 +120,8 @@
   }
 
   /* ---------- INPUTS ---------- */
-  .inputs-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 18px; }
-  @media (max-width: 820px){ .inputs-grid{ grid-template-columns: 1fr 1fr; } }
+  .inputs-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 18px; }
+  @media (max-width: 720px){ .inputs-grid{ grid-template-columns: 1fr 1fr; } }
   @media (max-width: 420px){ .inputs-grid{ grid-template-columns: 1fr; } }
   .field label{
     display:flex; justify-content:space-between; align-items:baseline;
@@ -146,12 +145,12 @@
     transition: border-color .15s ease;
   }
   input[type=number]:focus{ border-color: var(--gold); }
-  input[type=number]:disabled{ color: var(--gold-bright); opacity:1; -webkit-text-fill-color: var(--gold-bright); }
   .suffix{
     position:absolute; right:12px; top:50%; transform:translateY(-50%);
     font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:12.5px; color: var(--grey-dim);
     pointer-events:none;
   }
+  #retentionField{ display:none; }
   .reset-row{ display:flex; justify-content:flex-end; padding: 2px 18px 18px; }
   .reset-btn{
     background: transparent; color: var(--gold-bright);
@@ -160,15 +159,9 @@
   }
   .reset-btn:hover{ background: var(--gold); color: var(--ink); border-color: transparent; }
 
-  /* ---------- CAPTURE CARD (то, что уходит в скриншот) ---------- */
-  .capture-card{
-    background: var(--bg);
-    border-radius: 22px;
-    padding: 4px;
-  }
-  .capture-header{
-    display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 14px;
-  }
+  /* ---------- CAPTURE HEADER PILLS ---------- */
+  .capture-card{ background: var(--bg); border-radius: 22px; padding: 4px; }
+  .capture-header{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom: 16px; }
   .pill{
     font-family:'IBM Plex Mono', monospace; font-weight:700; font-size: 11px;
     padding: 6px 13px; border-radius: 20px;
@@ -177,99 +170,89 @@
   }
   .pill.strong{ background: linear-gradient(120deg, var(--gold-bright), var(--gold)); color: var(--ink); border-color:transparent; }
 
-  /* ---------- HERO RESULTS ---------- */
-  .hero-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  @media (max-width: 640px){ .hero-row{ grid-template-columns: 1fr; } }
-  .hero-card{ padding: 26px 26px 22px; border-radius: 20px; position:relative; overflow:hidden; }
-  .hero-card.revenue{ background: linear-gradient(135deg, var(--gold-bright), var(--gold)); color: var(--ink); }
-  .hero-card.profit{ background: var(--card); border: 1.5px solid var(--card-line); color: var(--white); }
-  .hero-card .h-label{
-    font-family:'Unbounded', sans-serif; font-weight:700; font-size: 11px;
-    letter-spacing:0.08em; text-transform:uppercase; opacity:0.7; margin-bottom: 10px;
+  /* ---------- SCENARIO COMPARISON ---------- */
+  .scenario-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 820px){ .scenario-grid{ grid-template-columns: 1fr; } }
+
+  .tier-card{
+    background: var(--card);
+    border: 1.5px solid var(--card-line-soft);
+    border-radius: 20px;
+    padding: 24px 22px;
+    position: relative;
   }
-  .hero-card .h-value{
+  .tier-card.tier-optimal{
+    border-color: var(--gold);
+    background: linear-gradient(180deg, rgba(232,179,8,0.09), transparent 45%), var(--card);
+    box-shadow: 0 10px 30px rgba(232,179,8,0.16);
+  }
+  .tier-card.tier-ideal{ border-color: rgba(53,208,138,0.45); }
+
+  .tier-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom: 16px; }
+  .tier-name{
+    font-family:'Unbounded', sans-serif; font-weight:700; font-size: 13px;
+    letter-spacing:0.04em; text-transform:uppercase;
+  }
+  .tier-minimal .tier-name{ color: var(--grey); }
+  .tier-optimal .tier-name{ color: var(--gold-bright); }
+  .tier-ideal .tier-name{ color: var(--green); }
+  .tier-badge{
+    font-family:'Inter', sans-serif; font-weight:700; font-size: 10px;
+    text-transform:uppercase; letter-spacing:0.04em;
+    background: var(--gold); color: var(--ink);
+    padding: 4px 10px; border-radius: 20px;
+  }
+
+  .tier-profit{
     font-family:'Unbounded', sans-serif; font-weight:800;
-    font-size: clamp(28px, 6vw, 44px); line-height: 1; letter-spacing:-0.02em;
-    word-break: break-word;
+    font-size: clamp(26px, 4vw, 32px); line-height:1; letter-spacing:-0.01em;
+    color: var(--white); word-break: break-word;
   }
-  .hero-card.profit .h-value.neg{ color: var(--red); }
-  .hero-card.profit .h-value.pos{ color: var(--green); }
-  .hero-card .h-sub{ margin-top: 10px; font-size: 12px; opacity:0.7; font-weight:600; }
+  .tier-profit.neg{ color: var(--red); }
+  .tier-profit-label{ font-size: 11px; color: var(--grey-dim); margin-top:6px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
 
-  /* ---------- FUNNEL SMALL STAGES ---------- */
-  .funnel-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top:14px; }
-  @media (max-width: 480px){ .funnel-row{ grid-template-columns: 1fr; } }
-  .stage{ padding: 20px 22px; }
-  .stage .s-label{
-    font-family:'Unbounded', sans-serif; font-weight:600; font-size:10.5px;
-    letter-spacing:0.08em; text-transform:uppercase; color: var(--grey); margin-bottom:8px;
+  .tier-revenue{ margin-top: 14px; font-size: 13px; color: var(--grey); }
+  .tier-revenue b{ color: var(--white); font-family:'IBM Plex Mono', monospace; }
+  .tier-revenue b.pos{ color: var(--green); }
+  .tier-revenue b.neg{ color: var(--red); }
+
+  .tier-ratio{
+    margin-top: 8px; font-family:'IBM Plex Mono', monospace; font-size: 12.5px; color: var(--gold-bright); font-weight:700;
   }
-  .stage .s-value{ font-family:'Unbounded', sans-serif; font-weight:700; font-size: 28px; color: var(--gold-bright); }
-  .stage .s-sub{ font-size:11.5px; color: var(--grey-dim); margin-top:6px; font-weight:600; }
+  .tier-ratio span{ color: var(--grey-dim); font-weight:500; margin-left:8px; }
 
-  /* ---------- BARS ---------- */
-  .bars-card{ padding: 26px 26px; margin-top:14px; }
-  .bars-card h3{
-    font-family:'Unbounded', sans-serif; font-weight:600; font-size:11px;
-    letter-spacing:0.08em; text-transform:uppercase; color: var(--grey); margin-bottom: 20px;
+  .tier-divider{ height:1px; background: var(--card-line-soft); margin: 16px 0; }
+
+  .tier-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size: 13px; color: var(--grey); padding: 5px 0;
   }
-  .bar-row{ display:grid; grid-template-columns: 80px 1fr auto; align-items:center; gap:14px; margin-bottom:14px; }
-  @media (max-width: 420px){ .bar-row{ grid-template-columns: 60px 1fr auto; gap:8px; } }
-  .bar-row:last-child{ margin-bottom:0; }
-  .bar-label{ font-size:12px; font-weight:700; color: var(--grey); }
-  .bar-track{ background: #000; border:1.5px solid var(--card-line-soft); border-radius: 8px; height: 26px; overflow:hidden; }
-  .bar-fill{ height:100%; border-radius:6px; transition: width .45s cubic-bezier(.4,0,.2,1); min-width:3px; }
-  .bar-fill.budget{ background: linear-gradient(90deg, #555, #888); }
-  .bar-fill.revenue{ background: linear-gradient(90deg, var(--gold), var(--gold-bright)); }
-  .bar-fill.profit-pos{ background: linear-gradient(90deg, #1B8A5A, var(--green)); }
-  .bar-fill.profit-neg{ background: linear-gradient(90deg, #8A2E27, var(--red)); }
-  .bar-value{ font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:12px; text-align:right; min-width:88px; color: var(--white); }
+  .tier-row b{ color: var(--white); font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:13px; }
+  .tier-row.profit-row b{ color: var(--green); }
+  .tier-row.profit-row b.neg{ color: var(--red); }
 
-  /* ---------- STATS ---------- */
-  .stats-row{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top:14px; }
-  @media (max-width: 560px){ .stats-row{ grid-template-columns: 1fr; } }
-  .stat-card{ padding: 22px 22px; }
-  .stat-card .s-label{
-    font-family:'Unbounded', sans-serif; font-weight:600; font-size:10px;
-    letter-spacing:0.06em; text-transform:uppercase; color: var(--grey); margin-bottom:8px;
-  }
-  .stat-card .s-value{ font-family:'Unbounded', sans-serif; font-size: 24px; font-weight:700; color: var(--white); }
-  .stat-card .s-value.pos{ color: var(--green); }
-  .stat-card .s-value.neg{ color: var(--red); }
-  .stat-card .s-hint{ font-size:11px; color: var(--grey-dim); margin-top:6px; line-height:1.4; font-weight:600; }
-
-  /* ---------- 6-MONTH BLOCK ---------- */
+  /* ---------- LTV BANNER ---------- */
   .ltv-banner{
     position:relative; overflow:hidden;
-    margin: 28px 0 12px;
-    padding: 20px 22px;
+    margin: 8px 0 16px;
+    padding: 18px 22px;
     border-radius: 18px;
     text-align:center;
     background:
       linear-gradient(100deg, rgba(232,179,8,0.16), rgba(232,179,8,0.04) 40%, rgba(232,179,8,0.16)),
       #0F0F0F;
     border: 1.5px solid var(--card-line);
+    display:none;
   }
   .ltv-banner .tiny{
     font-family:'IBM Plex Mono', monospace; font-weight:700; font-size:10.5px;
-    letter-spacing:0.16em; text-transform:uppercase; color: var(--gold-bright); margin-bottom:8px;
+    letter-spacing:0.16em; text-transform:uppercase; color: var(--gold-bright); margin-bottom:6px;
   }
   .ltv-banner h2{
-    font-family:'Unbounded', sans-serif; font-weight:800; font-size: clamp(17px,3.4vw,25px);
+    font-family:'Unbounded', sans-serif; font-weight:800; font-size: clamp(16px,3.2vw,22px);
     text-transform:uppercase; letter-spacing:-0.01em; color: var(--white);
   }
-  .ltv-banner p{ color: var(--grey); font-size: 12.5px; margin-top: 8px; max-width: 520px; margin-left:auto; margin-right:auto; line-height:1.5; }
-
-  #ltvSection{ display:none; }
-  .ltv-input-row{ display:grid; grid-template-columns: repeat(2,1fr); gap: 12px; padding: 18px; }
-  @media (max-width: 480px){ .ltv-input-row{ grid-template-columns: 1fr; } }
-  .ltv-hero-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top:14px; }
-  @media (max-width: 640px){ .ltv-hero-row{ grid-template-columns: 1fr; } }
-
-  .capture-footer{
-    margin-top: 16px; text-align:center; font-size:10.5px; color: var(--grey-dim);
-    font-family:'IBM Plex Mono', monospace;
-  }
+  .ltv-banner p{ color: var(--grey); font-size: 12.5px; margin-top: 6px; max-width: 520px; margin-left:auto; margin-right:auto; line-height:1.5; }
 
   /* ---------- DOWNLOAD ---------- */
   .download-row{ display:flex; justify-content:center; margin-top: 22px; }
@@ -304,19 +287,15 @@
     <header class="top">
       <div class="eyebrow">Демонстрация для клиента</div>
       <h1>Калькулятор <span class="hl">расчёта прибыльности</span> рекламы</h1>
-      <p>Выберите услугу, локацию и сценарий конверсии — остальное посчитается само. Любое значение можно поправить прямо на созвоне.</p>
+      <p>Выберите услугу и локацию — сразу увидите три сценария: минимальный, оптимальный и идеальный. Бюджет и чек можно поправить прямо на созвоне.</p>
     </header>
   </div>
 
   <div class="section-label">Услуга</div>
   <div class="card tabs" id="nicheTabs"></div>
 
-  <div class="section-label">Локация, валюта и сценарий конверсии</div>
-  <div class="controls-row">
-    <div class="card segmented" id="geoTabs"></div>
-    <div class="card segmented" id="curTabs"></div>
-    <div class="card segmented" id="scenarioTabs"></div>
-  </div>
+  <div class="section-label">Локация</div>
+  <div class="card segmented" id="geoTabs"></div>
 
   <div class="section-label">Параметры</div>
   <div class="card">
@@ -329,24 +308,17 @@
         </div>
       </div>
       <div class="field">
-        <label>Цена заявки <span class="tag">авто</span></label>
-        <div class="input-wrap">
-          <input type="number" id="cpl" min="0" step="0.5">
-          <span class="suffix" id="sfx-cpl">$</span>
-        </div>
-      </div>
-      <div class="field">
-        <label>Конверсия в клиента <span class="tag">авто</span></label>
-        <div class="input-wrap">
-          <input type="number" id="conv" min="0" max="100" step="1">
-          <span class="suffix">%</span>
-        </div>
-      </div>
-      <div class="field">
-        <label>Средний чек <span class="tag">авто</span></label>
+        <label>Средний чек <span class="tag">ввод</span></label>
         <div class="input-wrap">
           <input type="number" id="check" min="0" step="10">
           <span class="suffix" id="sfx-check">$</span>
+        </div>
+      </div>
+      <div class="field" id="retentionField">
+        <label>Возврат клиентов в месяц <span class="tag">авто</span></label>
+        <div class="input-wrap">
+          <input type="number" id="retentionRate" min="0" max="100" step="1">
+          <span class="suffix">%</span>
         </div>
       </div>
     </div>
@@ -362,115 +334,71 @@
     <div class="capture-header">
       <span class="pill strong" id="pillNiche">—</span>
       <span class="pill" id="pillGeo">—</span>
-      <span class="pill" id="pillCur">—</span>
-      <span class="pill" id="pillScenario">—</span>
     </div>
 
-    <div class="hero-row">
-      <div class="card hero-card revenue">
-        <div class="h-label">Выручка</div>
-        <div class="h-value" id="outRevenue">$0</div>
-        <div class="h-sub">клиенты × средний чек</div>
-      </div>
-      <div class="card hero-card profit">
-        <div class="h-label">Чистая прибыль</div>
-        <div class="h-value" id="outProfit">$0</div>
-        <div class="h-sub">выручка − бюджет на рекламу</div>
-      </div>
+    <div class="ltv-banner" id="ltvBanner">
+      <div class="tiny">⚡ Клиент возвращается снова</div>
+      <h2>В цифрах ниже уже учтена выгода за 6 месяцев</h2>
+      <p>Не все клиенты приходят каждый месяц — часть отваливается. Строки «за 6 мес» в каждом сценарии учитывают процент возврата.</p>
     </div>
 
-    <div class="funnel-row">
-      <div class="card stage">
-        <div class="s-label">Заявки</div>
-        <div class="s-value" id="outLeads">0</div>
-        <div class="s-sub">бюджет ÷ цена заявки</div>
-      </div>
-      <div class="card stage">
-        <div class="s-label">Клиенты</div>
-        <div class="s-value" id="outClients">0</div>
-        <div class="s-sub">заявки × конверсия</div>
-      </div>
-    </div>
+    <div class="scenario-grid">
 
-    <div class="card bars-card">
-      <h3>Бюджет → Выручка → Прибыль</h3>
-      <div class="bar-row">
-        <div class="bar-label">Бюджет</div>
-        <div class="bar-track"><div class="bar-fill budget" id="barBudget" style="width:0%"></div></div>
-        <div class="bar-value" id="barBudgetVal">0</div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label">Выручка</div>
-        <div class="bar-track"><div class="bar-fill revenue" id="barRevenue" style="width:0%"></div></div>
-        <div class="bar-value" id="barRevenueVal">0</div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label">Прибыль</div>
-        <div class="bar-track"><div class="bar-fill profit-pos" id="barProfit" style="width:0%"></div></div>
-        <div class="bar-value" id="barProfitVal">0</div>
-      </div>
-    </div>
-
-    <div class="stats-row">
-      <div class="card stat-card">
-        <div class="s-label">ROI</div>
-        <div class="s-value" id="statRoi">0%</div>
-        <div class="s-hint">возврат на вложенный бюджет</div>
-      </div>
-      <div class="card stat-card">
-        <div class="s-label">ROAS</div>
-        <div class="s-value" id="statRoas">0×</div>
-        <div class="s-hint">выручка на 1 вложенную единицу</div>
-      </div>
-      <div class="card stat-card">
-        <div class="s-label">Стоимость клиента</div>
-        <div class="s-value" id="statCac">$0</div>
-        <div class="s-hint">бюджет ÷ количество клиентов</div>
-      </div>
-    </div>
-
-    <!-- 6-МЕСЯЧНЫЙ ПРОГНОЗ ДЛЯ ПОВТОРНЫХ УСЛУГ -->
-    <div id="ltvSection">
-      <div class="ltv-banner">
-        <div class="tiny">⚡ Клиент возвращается снова</div>
-        <h2>Выгода за 6 месяцев</h2>
-        <p>Не все клиенты приходят каждый месяц — часть отваливается. Расчёт учитывает процент возврата и показывает реалистичную выгоду за полгода.</p>
-      </div>
-
-      <div class="card">
-        <div class="ltv-input-row">
-          <div class="field">
-            <label>Возврат клиентов в месяц <span class="tag">авто</span></label>
-            <div class="input-wrap">
-              <input type="number" id="retentionRate" min="0" max="100" step="1">
-              <span class="suffix">%</span>
-            </div>
-          </div>
-          <div class="field">
-            <label>LTV клиента <span class="tag">расчёт</span></label>
-            <div class="input-wrap">
-              <input type="number" id="ltvClient" disabled>
-              <span class="suffix" id="sfx-ltv">$</span>
-            </div>
-          </div>
+      <div class="tier-card tier-minimal">
+        <div class="tier-head"><div class="tier-name">Минимально</div></div>
+        <div class="tier-profit" id="worstRevenue">$0</div>
+        <div class="tier-profit-label">выручка</div>
+        <div class="tier-revenue">Прибыль: <b id="worstProfit">$0</b></div>
+        <div class="tier-ratio" id="worstRatio">1 : 3<span id="worstRoi">+200%</span></div>
+        <div class="tier-divider"></div>
+        <div class="tier-row"><span>Заявки</span><b id="worstLeads">0</b></div>
+        <div class="tier-row"><span>Клиенты</span><b id="worstClients">0</b></div>
+        <div class="tier-row"><span>Конверсия в клиента</span><b id="worstConv">0%</b></div>
+        <div class="tier-row"><span>Цена заявки</span><b id="worstCpl">$0</b></div>
+        <div id="worstLtvRows" style="display:none">
+          <div class="tier-divider"></div>
+          <div class="tier-row"><span>Выручка за 6 мес</span><b id="worstRevenue6m">$0</b></div>
+          <div class="tier-row profit-row"><span>Прибыль за 6 мес</span><b id="worstProfit6m">$0</b></div>
         </div>
       </div>
 
-      <div class="ltv-hero-row">
-        <div class="card hero-card revenue">
-          <div class="h-label">Выручка за 6 мес</div>
-          <div class="h-value" id="outRevenue6m">$0</div>
-          <div class="h-sub">с учётом оттока клиентов</div>
-        </div>
-        <div class="card hero-card profit">
-          <div class="h-label">Прибыль за 6 мес</div>
-          <div class="h-value" id="outProfit6m">$0</div>
-          <div class="h-sub">выручка за 6 мес − бюджет на тест</div>
+      <div class="tier-card tier-optimal">
+        <div class="tier-head"><div class="tier-name">Оптимально</div><div class="tier-badge">Реалистично</div></div>
+        <div class="tier-profit" id="optimalRevenue">$0</div>
+        <div class="tier-profit-label">выручка</div>
+        <div class="tier-revenue">Прибыль: <b id="optimalProfit">$0</b></div>
+        <div class="tier-ratio" id="optimalRatio">1 : 5<span id="optimalRoi">+400%</span></div>
+        <div class="tier-divider"></div>
+        <div class="tier-row"><span>Заявки</span><b id="optimalLeads">0</b></div>
+        <div class="tier-row"><span>Клиенты</span><b id="optimalClients">0</b></div>
+        <div class="tier-row"><span>Конверсия в клиента</span><b id="optimalConv">0%</b></div>
+        <div class="tier-row"><span>Цена заявки</span><b id="optimalCpl">$0</b></div>
+        <div id="optimalLtvRows" style="display:none">
+          <div class="tier-divider"></div>
+          <div class="tier-row"><span>Выручка за 6 мес</span><b id="optimalRevenue6m">$0</b></div>
+          <div class="tier-row profit-row"><span>Прибыль за 6 мес</span><b id="optimalProfit6m">$0</b></div>
         </div>
       </div>
-    </div>
 
-    <div class="capture-footer" id="captureDate"></div>
+      <div class="tier-card tier-ideal">
+        <div class="tier-head"><div class="tier-name">Идеально</div></div>
+        <div class="tier-profit" id="idealRevenue">$0</div>
+        <div class="tier-profit-label">выручка</div>
+        <div class="tier-revenue">Прибыль: <b id="idealProfit">$0</b></div>
+        <div class="tier-ratio" id="idealRatio">1 : 9<span id="idealRoi">+800%</span></div>
+        <div class="tier-divider"></div>
+        <div class="tier-row"><span>Заявки</span><b id="idealLeads">0</b></div>
+        <div class="tier-row"><span>Клиенты</span><b id="idealClients">0</b></div>
+        <div class="tier-row"><span>Конверсия в клиента</span><b id="idealConv">0%</b></div>
+        <div class="tier-row"><span>Цена заявки</span><b id="idealCpl">$0</b></div>
+        <div id="idealLtvRows" style="display:none">
+          <div class="tier-divider"></div>
+          <div class="tier-row"><span>Выручка за 6 мес</span><b id="idealRevenue6m">$0</b></div>
+          <div class="tier-row profit-row"><span>Прибыль за 6 мес</span><b id="idealProfit6m">$0</b></div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <div class="download-row">
@@ -482,8 +410,6 @@
 
 <script>
 // ---------- DATA: бьюти-ниши ----------
-// recurring: услуга требует регулярных повторных визитов
-// retention: % клиентов, которые возвращаются каждый следующий месяц (остальные отваливаются)
 const NICHES = {
   manicure:   { label: "Маникюр / педикюр",         cpl: 4,  check: 40,  recurring: true,  retention: 70 },
   lashes:     { label: "Наращивание ресниц",         cpl: 5,  check: 55,  recurring: true,  retention: 65 },
@@ -497,125 +423,135 @@ const NICHES = {
   spa:        { label: "SPA / массаж",               cpl: 8,  check: 90,  recurring: true,  retention: 45 },
 };
 
-// Сценарии отличаются конверсией заявки в запись — одинаковой для всех ниш
+// Три сценария показываются одновременно. Конверсия и целевая окупаемость зафиксированы;
+// цена заявки и число заявок/клиентов считаются в обратную сторону.
 const SCENARIOS = {
-  worst:   { label: "Минимальный",  conv: 12 },
-  optimal: { label: "Оптимальный",  conv: 20 },
-  ideal:   { label: "Идеальный",    conv: 30 },
+  worst:   { label: "Минимально", conv: 17, ratio: 3 },
+  optimal: { label: "Оптимально", conv: 25, ratio: 5 },
+  ideal:   { label: "Идеально",   conv: 35, ratio: 9 },
 };
+const SCENARIO_KEYS = ['worst', 'optimal', 'ideal'];
 
+// Валюта жёстко привязана к локации
 const GEOS = {
-  dubai:  { label: "Дубай",  cplMult: 1.30, checkMult: 1.30 },
-  usa:    { label: "США",    cplMult: 1.50, checkMult: 1.40 },
-  canada: { label: "Канада", cplMult: 1.10, checkMult: 1.10 },
-  europe: { label: "Европа", cplMult: 1.00, checkMult: 1.00 },
+  dubai:  { label: "Дубай",  currency: "AED", cplMult: 1.30, checkMult: 1.30 },
+  usa:    { label: "США",    currency: "USD", cplMult: 1.50, checkMult: 1.40 },
+  canada: { label: "Канада", currency: "CAD", cplMult: 1.10, checkMult: 1.10 },
+  europe: { label: "Европа", currency: "EUR", cplMult: 1.00, checkMult: 1.00 },
 };
 
 const CURRENCIES = {
-  USD: { label: "USD", rate: 1,    symbol: "$" },
-  AED: { label: "AED", rate: 3.67, symbol: "AED " },
-  EUR: { label: "EUR", rate: 0.92, symbol: "€" },
-  CAD: { label: "CAD", rate: 1.38, symbol: "C$" },
+  USD: { rate: 1,    symbol: "$" },
+  AED: { rate: 3.67, symbol: "AED " },
+  EUR: { rate: 0.92, symbol: "€" },
+  CAD: { rate: 1.38, symbol: "C$" },
 };
 
-let state = { niche: 'manicure', geo: 'dubai', currency: 'USD', scenario: 'optimal' };
-let prevValues = { leads:0, clients:0, revenue:0, profit:0, revenue6m:0, profit6m:0 };
-let current = {};
+let state = { niche: 'manicure', geo: 'dubai' };
+let current = {}; // последние посчитанные значения по всем сценариям — нужны для скачивания картинки
 
 const $ = id => document.getElementById(id);
-const budgetInp = $('budget'), cplInp = $('cpl'), convInp = $('conv'), checkInp = $('check');
-const retentionInp = $('retentionRate'), ltvClientInp = $('ltvClient');
-const ltvSection = $('ltvSection');
+const budgetInp = $('budget'), checkInp = $('check'), retentionInp = $('retentionRate');
+const retentionField = $('retentionField'), ltvBanner = $('ltvBanner');
 
-function buildTabs(container, obj, stateKey, onSelect, cls){
-  container.innerHTML = '';
-  Object.entries(obj).forEach(([key, val]) => {
-    const btn = document.createElement('button');
-    btn.className = cls + (state[stateKey] === key ? ' active' : '');
-    btn.innerHTML = val.label + (val.recurring ? '<span class="rec-dot" title="Регулярная услуга"></span>' : '');
-    btn.addEventListener('click', () => {
-      state[stateKey] = key;
-      [...container.children].forEach(c => c.classList.remove('active'));
-      btn.classList.add('active');
-      onSelect();
-    });
-    container.appendChild(btn);
-  });
-}
-
-const nicheTabsEl = $('nicheTabs'), geoTabsEl = $('geoTabs'), curTabsEl = $('curTabs'), scenarioTabsEl = $('scenarioTabs');
-buildTabs(nicheTabsEl, NICHES, 'niche', applyDefaults, 'tab');
-buildTabs(geoTabsEl, GEOS, 'geo', applyDefaults, 'seg-btn');
-buildTabs(curTabsEl, CURRENCIES, 'currency', applyDefaults, 'seg-btn');
-buildTabs(scenarioTabsEl, SCENARIOS, 'scenario', applyScenario, 'seg-btn');
+function currencyCode(){ return GEOS[state.geo].currency; }
 
 function fmt(n, decimals=0){
   return Number(n).toLocaleString('ru-RU', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 }
 function money(n){
-  const cur = CURRENCIES[state.currency];
+  const cur = CURRENCIES[currencyCode()];
   const sign = n < 0 ? '−' : '';
   return sign + cur.symbol + fmt(Math.abs(n), 0);
 }
 function round1(v){ return Math.round(v*10)/10; }
 
 function updateSuffixes(){
-  const sym = CURRENCIES[state.currency].symbol.trim();
+  const sym = CURRENCIES[currencyCode()].symbol.trim();
   $('sfx-budget').textContent = sym;
-  $('sfx-cpl').textContent = sym;
   $('sfx-check').textContent = sym;
-  $('sfx-ltv').textContent = sym;
 }
 
 function updatePills(){
   $('pillNiche').textContent = NICHES[state.niche].label;
-  $('pillGeo').textContent = GEOS[state.geo].label;
-  $('pillCur').textContent = state.currency;
-  $('pillScenario').textContent = SCENARIOS[state.scenario].label + ' сценарий';
+  $('pillGeo').textContent = GEOS[state.geo].label + ' · ' + currencyCode();
 }
 
-function applyDefaults(){
+// ---------- НИША: тогглы ----------
+const nicheTabsEl = $('nicheTabs');
+function buildNicheTabs(){
+  nicheTabsEl.innerHTML = '';
+  Object.entries(NICHES).forEach(([key, val]) => {
+    const btn = document.createElement('button');
+    btn.className = 'tab' + (state.niche === key ? ' active' : '');
+    btn.innerHTML = val.label + (val.recurring ? '<span class="rec-dot" title="Регулярная услуга"></span>' : '');
+    btn.addEventListener('click', () => {
+      state.niche = key;
+      [...nicheTabsEl.children].forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      applyNicheChange();
+    });
+    nicheTabsEl.appendChild(btn);
+  });
+}
+buildNicheTabs();
+
+// ---------- ЛОКАЦИЯ: тогглы (валюта пересчитывается, введённые суммы конвертируются) ----------
+const geoTabsEl = $('geoTabs');
+function buildGeoTabs(){
+  geoTabsEl.innerHTML = '';
+  Object.entries(GEOS).forEach(([key, val]) => {
+    const btn = document.createElement('button');
+    btn.className = 'seg-btn' + (state.geo === key ? ' active' : '');
+    btn.textContent = val.label + ' · ' + val.currency;
+    btn.addEventListener('click', () => {
+      const oldCurrency = currencyCode();
+      const newCurrency = val.currency;
+      state.geo = key;
+      [...geoTabsEl.children].forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (oldCurrency !== newCurrency) {
+        const factor = CURRENCIES[newCurrency].rate / CURRENCIES[oldCurrency].rate;
+        budgetInp.value = round1((parseFloat(budgetInp.value) || 0) * factor);
+        checkInp.value = round1((parseFloat(checkInp.value) || 0) * factor);
+      }
+
+      updateSuffixes();
+      updatePills();
+      calculate();
+    });
+    geoTabsEl.appendChild(btn);
+  });
+}
+buildGeoTabs();
+
+// Смена ниши — полный сброс бюджета/чека под типовые показатели этой услуги (в текущей валюте)
+function applyNicheChange(){
   const n = NICHES[state.niche];
   const g = GEOS[state.geo];
-  const cur = CURRENCIES[state.currency];
+  const cur = CURRENCIES[g.currency];
 
-  const cpl = n.cpl * g.cplMult * cur.rate;
+  const seedCpl = n.cpl * g.cplMult * cur.rate; // только чтобы предложить стартовый бюджет
   const check = n.check * g.checkMult * cur.rate;
-  const budget = cpl * 40;
-  const conv = SCENARIOS[state.scenario].conv;
 
-  budgetInp.value = Math.round(budget);
-  cplInp.value = round1(cpl);
-  convInp.value = conv;
+  budgetInp.value = Math.round(seedCpl * 40);
   checkInp.value = Math.round(check);
   retentionInp.value = n.retention;
 
-  ltvSection.style.display = n.recurring ? 'block' : 'none';
+  retentionField.style.display = n.recurring ? 'block' : 'none';
+  ltvBanner.style.display = n.recurring ? 'block' : 'none';
 
   updateSuffixes();
   updatePills();
   calculate();
 }
 
-// Смена сценария меняет только конверсию — бюджет, цену заявки и чек,
-// введённые/поправленные пользователем, не трогаем
-function applyScenario(){
-  convInp.value = SCENARIOS[state.scenario].conv;
-  updatePills();
-  calculate();
+function resetAll(){
+  applyNicheChange();
 }
-
-function animateValue(el, from, to, formatFn, duration=380){
-  const start = performance.now();
-  function step(now){
-    const t = Math.min(1, (now - start) / duration);
-    const eased = 1 - Math.pow(1 - t, 3);
-    const val = from + (to - from) * eased;
-    el.textContent = formatFn(val);
-    if(t < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
+$('resetBtn').addEventListener('click', resetAll);
+[budgetInp, checkInp, retentionInp].forEach(inp => inp.addEventListener('input', calculate));
 
 // Сколько раз в среднем клиент дойдёт за 6 месяцев.
 // Первый месяц приходят все клиенты. В каждый из следующих 5 месяцев
@@ -625,83 +561,68 @@ function expectedVisits(retentionPct, months=6){
   return 1 + r * (months - 1);
 }
 
-function calculate(){
-  const budget = parseFloat(budgetInp.value) || 0;
-  const cpl = parseFloat(cplInp.value) || 0.0001;
-  const conv = (parseFloat(convInp.value) || 0) / 100;
-  const check = parseFloat(checkInp.value) || 0;
+function calcScenario(key, budget, check, retentionPct, recurring){
+  const s = SCENARIOS[key];
+  const ratio = s.ratio;
+  const conv = s.conv / 100;
 
-  const leads = budget / cpl;
-  const clients = leads * conv;
-  const revenue = clients * check;
-  const netProfit = revenue - budget; // маржа не учитывается — просто выручка минус бюджет
-  const roi = budget > 0 ? (netProfit / budget) * 100 : 0;
-  const roas = budget > 0 ? revenue / budget : 0;
-  const cac = clients > 0 ? budget / clients : 0;
+  const revenue = budget * ratio;
+  const profit = revenue - budget;
+  const clients = check > 0 ? revenue / check : 0;
+  const leads = conv > 0 ? clients / conv : 0;
+  const cpl = leads > 0 ? budget / leads : 0;
+  const roi = budget > 0 ? (profit / budget) * 100 : 0;
 
-  animateValue($('outLeads'), prevValues.leads, leads, v => fmt(v, v < 10 ? 1 : 0));
-  animateValue($('outClients'), prevValues.clients, clients, v => fmt(v, v < 10 ? 1 : 0));
-  animateValue($('outRevenue'), prevValues.revenue, revenue, v => money(v));
-  animateValue($('outProfit'), prevValues.profit, netProfit, v => money(v));
+  const result = { revenue, profit, clients, leads, cpl, roi, ratio, conv: s.conv };
 
-  const profitHero = $('outProfit');
-  profitHero.classList.toggle('pos', netProfit >= 0);
-  profitHero.classList.toggle('neg', netProfit < 0);
-
-  const maxVal = Math.max(budget, revenue, Math.abs(netProfit), 1);
-  $('barBudget').style.width = (budget / maxVal * 100) + '%';
-  $('barRevenue').style.width = (revenue / maxVal * 100) + '%';
-  const profitBar = $('barProfit');
-  profitBar.style.width = (Math.abs(netProfit) / maxVal * 100) + '%';
-  profitBar.className = 'bar-fill ' + (netProfit >= 0 ? 'profit-pos' : 'profit-neg');
-
-  $('barBudgetVal').textContent = money(budget);
-  $('barRevenueVal').textContent = money(revenue);
-  $('barProfitVal').textContent = money(netProfit);
-
-  const roiEl = $('statRoi');
-  roiEl.textContent = (roi >= 0 ? '+' : '') + fmt(roi, 0) + '%';
-  roiEl.classList.toggle('pos', roi >= 0);
-  roiEl.classList.toggle('neg', roi < 0);
-
-  $('statRoas').textContent = fmt(roas, 2) + '×';
-  $('statCac').textContent = money(cac);
-
-  // ---- 6-месячный прогноз с учётом оттока клиентов ----
-  if (NICHES[state.niche].recurring){
-    const retentionPct = Math.max(0, Math.min(100, parseFloat(retentionInp.value) || 0));
+  if (recurring){
     const visits = expectedVisits(retentionPct, 6);
-    const ltv = check * visits;
-    const revenue6m = revenue * visits;
-    const profit6m = revenue6m - budget;
-
-    ltvClientInp.value = Math.round(ltv);
-    animateValue($('outRevenue6m'), prevValues.revenue6m, revenue6m, v => money(v));
-    animateValue($('outProfit6m'), prevValues.profit6m, profit6m, v => money(v));
-    const profit6mEl = $('outProfit6m');
-    profit6mEl.classList.toggle('pos', profit6m >= 0);
-    profit6mEl.classList.toggle('neg', profit6m < 0);
-
-    prevValues.revenue6m = revenue6m;
-    prevValues.profit6m = profit6m;
+    result.revenue6m = revenue * visits;
+    result.profit6m = result.revenue6m - budget;
   }
+  return result;
+}
 
-  prevValues.leads = leads;
-  prevValues.clients = clients;
-  prevValues.revenue = revenue;
-  prevValues.profit = netProfit;
+function renderScenario(key, r, recurring){
+  $(key + 'Revenue').textContent = money(r.revenue);
 
-  current = { leads, clients, revenue, netProfit, roi, roas, cac };
-  if (NICHES[state.niche].recurring){
-    current.retentionPct = Math.max(0, Math.min(100, parseFloat(retentionInp.value) || 0));
-    current.ltv = parseFloat(ltvClientInp.value) || 0;
-    current.revenue6m = prevValues.revenue6m;
-    current.profit6m = prevValues.profit6m;
+  const profitEl = $(key + 'Profit');
+  profitEl.textContent = money(r.profit);
+  profitEl.classList.toggle('pos', r.profit >= 0);
+  profitEl.classList.toggle('neg', r.profit < 0);
+
+  $(key + 'Ratio').innerHTML = '1 : ' + fmt(r.ratio, 0) + '<span>' + (r.roi >= 0 ? '+' : '') + fmt(r.roi, 0) + '% ROI</span>';
+  $(key + 'Leads').textContent = fmt(r.leads, r.leads < 10 ? 1 : 0);
+  $(key + 'Clients').textContent = fmt(r.clients, r.clients < 10 ? 1 : 0);
+  $(key + 'Conv').textContent = fmt(r.conv, 0) + '%';
+  $(key + 'Cpl').textContent = money(r.cpl);
+
+  const ltvRowsEl = $(key + 'LtvRows');
+  if (recurring){
+    ltvRowsEl.style.display = 'block';
+    const profit6mEl = $(key + 'Profit6m');
+    $(key + 'Revenue6m').textContent = money(r.revenue6m);
+    profit6mEl.textContent = money(r.profit6m);
+    profit6mEl.classList.toggle('neg', r.profit6m < 0);
+  } else {
+    ltvRowsEl.style.display = 'none';
   }
 }
 
-$('resetBtn').addEventListener('click', applyDefaults);
-[budgetInp, cplInp, convInp, checkInp, retentionInp].forEach(inp => inp.addEventListener('input', calculate));
+function calculate(){
+  const budget = parseFloat(budgetInp.value) || 0;
+  const check = parseFloat(checkInp.value) || 0;
+  const recurring = NICHES[state.niche].recurring;
+  const retentionPct = recurring ? Math.max(0, Math.min(100, parseFloat(retentionInp.value) || 0)) : 0;
+
+  current = {};
+  SCENARIO_KEYS.forEach(key => {
+    const r = calcScenario(key, budget, check, retentionPct, recurring);
+    renderScenario(key, r, recurring);
+    current[key] = r;
+  });
+  current.recurring = recurring;
+}
 
 // ---------- РИСУЕМ КАРТОЧКУ РЕЗУЛЬТАТА НА CANVAS (без внешних библиотек) ----------
 function roundRectPath(ctx, x, y, w, h, r){
@@ -738,14 +659,18 @@ function wrapText(ctx, text, cx, y, maxWidth, lineHeight){
 function drawSummaryCanvas(){
   const COL = {
     gold: '#E8B308', goldBright: '#FFD65C', ink: '#0A0A0A', bg: '#060606',
-    card: '#0F0F0F', line: 'rgba(232,179,8,0.35)', white: '#FFFFFF',
+    card: '#0F0F0F', lineSoft: 'rgba(255,255,255,0.12)', lineGold: 'rgba(232,179,8,0.5)',
+    lineGreen: 'rgba(53,208,138,0.5)', white: '#FFFFFF',
     grey: '#B7B8C0', greyDim: '#7A7B85', green: '#35D08A', red: '#F0564A'
   };
-  const isRecurring = NICHES[state.niche].recurring;
-  const W = 880;
-  const H = isRecurring ? 1400 : 1040;
+  const isRecurring = !!current.recurring;
+  const W = 1100;
+  const colGap = 18;
+  const pad = 40;
+  const colW = (W - pad*2 - colGap*2) / 3;
+  const colH = isRecurring ? 588 : 458;
+  const H = 210 + colH + 70;
   const SCALE = 2;
-  const pad = 44;
 
   const canvas = document.createElement('canvas');
   canvas.width = W * SCALE;
@@ -757,22 +682,21 @@ function drawSummaryCanvas(){
   const F_BODY = "'Inter', sans-serif";
   const F_MONO = "'IBM Plex Mono', monospace";
 
-  // фон
   ctx.fillStyle = COL.bg;
   ctx.fillRect(0, 0, W, H);
-  let glow = ctx.createRadialGradient(W/2, -30, 10, W/2, -30, 420);
-  glow.addColorStop(0, 'rgba(232,179,8,0.22)');
+  let glow = ctx.createRadialGradient(W/2, -30, 10, W/2, -30, 460);
+  glow.addColorStop(0, 'rgba(232,179,8,0.20)');
   glow.addColorStop(1, 'rgba(232,179,8,0)');
   ctx.fillStyle = glow;
   ctx.fillRect(0, 0, W, 320);
 
   ctx.textAlign = 'center';
-  let y = pad + 14;
+  let y = pad + 10;
 
   ctx.fillStyle = COL.goldBright;
   ctx.font = `700 12px ${F_MONO}`;
   ctx.fillText('Р А С Ч Ё Т   П Р И Б Ы Л Ь Н О С Т И   Р Е К Л А М Ы', W/2, y);
-  y += 38;
+  y += 36;
 
   ctx.fillStyle = COL.white;
   ctx.font = `800 30px ${F_HEAD}`;
@@ -781,109 +705,102 @@ function drawSummaryCanvas(){
 
   ctx.fillStyle = COL.grey;
   ctx.font = `600 14px ${F_MONO}`;
-  ctx.fillText(`${GEOS[state.geo].label}  ·  ${state.currency}  ·  ${SCENARIOS[state.scenario].label} сценарий`, W/2, y);
+  ctx.fillText(`${GEOS[state.geo].label} · ${currencyCode()}`, W/2, y);
   y += 34;
 
-  // helper: карточка-плашка
-  function box(x, by, w, h, filled){
-    if (filled){
-      const grad = ctx.createLinearGradient(x, by, x + w, by + h);
-      grad.addColorStop(0, COL.goldBright);
-      grad.addColorStop(1, COL.gold);
-      ctx.fillStyle = grad;
-      roundRectPath(ctx, x, by, w, h, 16);
-      ctx.fill();
-    } else {
-      ctx.fillStyle = COL.card;
-      roundRectPath(ctx, x, by, w, h, 16);
-      ctx.fill();
-      ctx.strokeStyle = COL.line;
-      ctx.lineWidth = 1.5;
-      roundRectPath(ctx, x, by, w, h, 16);
-      ctx.stroke();
-    }
-  }
+  const colsY = y;
+  const cols = [
+    { key: 'worst',   name: 'МИНИМАЛЬНО', nameColor: COL.grey,       lineColor: COL.lineSoft, badge: null },
+    { key: 'optimal', name: 'ОПТИМАЛЬНО', nameColor: COL.goldBright, lineColor: COL.lineGold, badge: 'РЕАЛИСТИЧНО' },
+    { key: 'ideal',   name: 'ИДЕАЛЬНО',   nameColor: COL.green,      lineColor: COL.lineGreen, badge: null },
+  ];
 
-  function heroCard(x, by, w, h, label, value, filled, valueColor){
-    box(x, by, w, h, filled);
-    ctx.textAlign = 'left';
-    ctx.fillStyle = filled ? 'rgba(10,10,10,0.65)' : COL.grey;
-    ctx.font = `700 11px ${F_HEAD}`;
-    ctx.fillText(label.toUpperCase(), x + 22, by + 30);
-    ctx.fillStyle = filled ? COL.ink : valueColor;
-    ctx.font = `800 32px ${F_HEAD}`;
-    ctx.fillText(value, x + 22, by + h - 24);
-  }
+  cols.forEach((col, i) => {
+    const x = pad + i * (colW + colGap);
+    const r = current[col.key];
 
-  function smallStat(x, by, w, h, label, value, valueColor){
-    box(x, by, w, h, false);
-    ctx.textAlign = 'left';
-    ctx.fillStyle = COL.grey;
-    ctx.font = `600 10.5px ${F_HEAD}`;
-    ctx.fillText(label.toUpperCase(), x + 18, by + 26);
-    ctx.fillStyle = valueColor || COL.goldBright;
-    ctx.font = `700 22px ${F_HEAD}`;
-    ctx.fillText(value, x + 18, by + h - 18);
-  }
-
-  const gap = 14;
-  const halfW = (W - pad*2 - gap) / 2;
-
-  // выручка / прибыль
-  const heroH = 118;
-  heroCard(pad, y, halfW, heroH, 'Выручка', money(current.revenue), true);
-  heroCard(pad + halfW + gap, y, halfW, heroH,
-    'Чистая прибыль', money(current.netProfit), false,
-    current.netProfit >= 0 ? COL.green : COL.red);
-  y += heroH + gap;
-
-  // заявки / клиенты
-  const stageH = 86;
-  smallStat(pad, y, halfW, stageH, 'Заявки', fmt(current.leads, current.leads < 10 ? 1 : 0), COL.goldBright);
-  smallStat(pad + halfW + gap, y, halfW, stageH, 'Клиенты', fmt(current.clients, current.clients < 10 ? 1 : 0), COL.goldBright);
-  y += stageH + gap;
-
-  // ROI / ROAS / CAC
-  const thirdW = (W - pad*2 - gap*2) / 3;
-  const statH = 86;
-  smallStat(pad, y, thirdW, statH, 'ROI', (current.roi >= 0 ? '+' : '') + fmt(current.roi, 0) + '%', current.roi >= 0 ? COL.green : COL.red);
-  smallStat(pad + thirdW + gap, y, thirdW, statH, 'ROAS', fmt(current.roas, 2) + '×', COL.white);
-  smallStat(pad + (thirdW + gap)*2, y, thirdW, statH, 'Стоимость клиента', money(current.cac), COL.white);
-  y += statH + gap;
-
-  if (isRecurring){
-    y += 20;
-    // баннер
-    const bannerH = 96;
     ctx.fillStyle = COL.card;
-    roundRectPath(ctx, pad, y, W - pad*2, bannerH, 16);
+    roundRectPath(ctx, x, colsY, colW, colH, 18);
     ctx.fill();
-    ctx.strokeStyle = COL.line;
-    ctx.lineWidth = 1.5;
-    roundRectPath(ctx, pad, y, W - pad*2, bannerH, 16);
+    ctx.strokeStyle = col.lineColor;
+    ctx.lineWidth = i === 1 ? 2 : 1.5;
+    roundRectPath(ctx, x, colsY, colW, colH, 18);
     ctx.stroke();
 
-    ctx.textAlign = 'center';
-    ctx.fillStyle = COL.goldBright;
-    ctx.font = `700 11px ${F_MONO}`;
-    ctx.fillText('⚡ КЛИЕНТ ВОЗВРАЩАЕТСЯ СНОВА', W/2, y + 26);
+    let cy = colsY + 34;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = col.nameColor;
+    ctx.font = `700 13px ${F_HEAD}`;
+    ctx.fillText(col.name, x + 22, cy);
+
+    if (col.badge){
+      const bw = ctx.measureText(col.badge).width + 20;
+      ctx.fillStyle = COL.gold;
+      roundRectPath(ctx, x + colW - bw - 20, cy - 14, bw, 22, 11);
+      ctx.fill();
+      ctx.fillStyle = COL.ink;
+      ctx.font = `700 9.5px ${F_BODY}`;
+      ctx.fillText(col.badge, x + colW - bw - 10, cy + 1);
+    }
+
+    cy += 40;
     ctx.fillStyle = COL.white;
-    ctx.font = `800 19px ${F_HEAD}`;
-    ctx.fillText('ВЫГОДА ЗА 6 МЕСЯЦЕВ', W/2, y + 52);
+    ctx.font = `800 27px ${F_HEAD}`;
+    ctx.fillText(money(r.revenue), x + 22, cy);
+    cy += 20;
+    ctx.fillStyle = COL.greyDim;
+    ctx.font = `600 10px ${F_HEAD}`;
+    ctx.fillText('ВЫРУЧКА', x + 22, cy);
+
+    cy += 30;
     ctx.fillStyle = COL.grey;
-    ctx.font = `500 12.5px ${F_BODY}`;
-    wrapText(ctx, `Возврат клиентов: ${fmt(current.retentionPct,0)}% в месяц · LTV клиента: ${money(current.ltv)}`, W/2, y + 76, W - pad*2 - 60, 16);
-    y += bannerH + gap;
+    ctx.font = `500 13px ${F_BODY}`;
+    ctx.fillText('Прибыль: ', x + 22, cy);
+    const profitLabelW = ctx.measureText('Прибыль: ').width;
+    ctx.fillStyle = r.profit >= 0 ? COL.green : COL.red;
+    ctx.font = `700 13px ${F_MONO}`;
+    ctx.fillText(money(r.profit), x + 22 + profitLabelW, cy);
 
-    heroCard(pad, y, halfW, heroH, 'Выручка за 6 мес', money(current.revenue6m), true);
-    heroCard(pad + halfW + gap, y, halfW, heroH,
-      'Прибыль за 6 мес', money(current.profit6m), false,
-      current.profit6m >= 0 ? COL.green : COL.red);
-    y += heroH + gap;
-  }
+    cy += 24;
+    ctx.fillStyle = COL.goldBright;
+    ctx.font = `700 13px ${F_MONO}`;
+    ctx.fillText('1 : ' + fmt(r.ratio,0) + '   ' + (r.roi>=0?'+':'') + fmt(r.roi,0) + '% ROI', x + 22, cy);
 
-  // футер
-  y += 18;
+    cy += 20;
+    ctx.strokeStyle = COL.lineSoft;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x+22, cy); ctx.lineTo(x+colW-22, cy); ctx.stroke();
+    cy += 26;
+
+    function row(label, value, valueColor){
+      ctx.fillStyle = COL.grey;
+      ctx.font = `500 12.5px ${F_BODY}`;
+      ctx.textAlign = 'left';
+      ctx.fillText(label, x + 22, cy);
+      ctx.fillStyle = valueColor || COL.white;
+      ctx.font = `700 12.5px ${F_MONO}`;
+      ctx.textAlign = 'right';
+      ctx.fillText(value, x + colW - 22, cy);
+      ctx.textAlign = 'left';
+      cy += 24;
+    }
+
+    row('Заявки', fmt(r.leads, r.leads < 10 ? 1 : 0));
+    row('Клиенты', fmt(r.clients, r.clients < 10 ? 1 : 0));
+    row('Конверсия в клиента', fmt(r.conv, 0) + '%');
+    row('Цена заявки', money(r.cpl));
+
+    if (isRecurring){
+      cy += 4;
+      ctx.strokeStyle = COL.lineSoft;
+      ctx.beginPath(); ctx.moveTo(x+22, cy); ctx.lineTo(x+colW-22, cy); ctx.stroke();
+      cy += 26;
+      row('Выручка за 6 мес', money(r.revenue6m));
+      row('Прибыль за 6 мес', money(r.profit6m), r.profit6m >= 0 ? COL.green : COL.red);
+    }
+  });
+
+  y = colsY + colH + 40;
   ctx.textAlign = 'center';
   ctx.fillStyle = COL.greyDim;
   ctx.font = `500 11px ${F_MONO}`;
@@ -922,7 +839,6 @@ downloadBtn.addEventListener('click', async () => {
 
         const file = new File([blob], 'raschet-pribylnosti.png', { type: 'image/png' });
 
-        // На телефоне — системный шеринг (можно сразу отправить клиенту или сохранить в галерею)
         if (navigator.canShare && navigator.canShare({ files: [file] })){
           try {
             await navigator.share({ files: [file], title: 'Расчёт прибыльности рекламы' });
@@ -964,7 +880,7 @@ downloadBtn.addEventListener('click', async () => {
   }
 });
 
-applyDefaults();
+applyNicheChange();
 </script>
 
 </body>
